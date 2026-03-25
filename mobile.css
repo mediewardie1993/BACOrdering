@@ -21,9 +21,7 @@ body {
   min-height: 100%;
   font-family: Arial, Helvetica, sans-serif;
   color: var(--ink);
-  background:
-    radial-gradient(circle at top, rgba(255, 220, 220, 0.24), transparent 30%),
-    linear-gradient(180deg, #b86a40 0%, #ae623d 100%);
+  background: linear-gradient(180deg, #ffffff 0%, #fff4e7 46%, #ffc78f 100%);
 }
 
 button,
@@ -211,9 +209,7 @@ select {
 .drink-image {
   height: 124px;
   border-radius: 18px;
-  background:
-    radial-gradient(circle at 24% 22%, rgba(255, 255, 255, 0.6), transparent 18%),
-    linear-gradient(135deg, rgba(242, 121, 31, 0.25), rgba(255, 205, 213, 0.7));
+  background-color: #ffffff;
   background-position: center;
   background-repeat: no-repeat;
   background-size: contain;
