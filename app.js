@@ -89,7 +89,6 @@ const state = {
 };
 
 const elements = {
-  featuredBanner: document.getElementById("featured-banner"),
   menuGrid: document.getElementById("menu-grid"),
   menuSearch: document.getElementById("menu-search"),
   categoryFilter: document.getElementById("category-filter"),
@@ -142,17 +141,8 @@ function hydrateCategoryFilter() {
 }
 
 function render() {
-  renderFeaturedBanner();
   renderMenu();
   renderCart();
-}
-
-function renderFeaturedBanner() {
-  elements.featuredBanner.innerHTML = `
-    <p class="section-kicker">Customer Ordering</p>
-    <strong>Choose your drink, pick a size, then tap + or -.</strong>
-    <p>Items marked unavailable from the staff side will automatically stop accepting orders here.</p>
-  `;
 }
 
 function renderMenu() {
