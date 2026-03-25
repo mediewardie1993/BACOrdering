@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Begin Again Cafe Orders</title>
+    <link rel="stylesheet" href="./style.css" />
+  </head>
+  <body>
+    <div class="page-shell">
+      <header class="hero">
+        <div class="hero-copy">
+          <p class="eyebrow">Begin Again Cafe</p>
+          <h1>Simple ordering built around your current drinks menu.</h1>
+          <p>
+            Customers can browse drinks, choose a size when available, adjust
+            quantity instantly, and place an order from one clean screen.
+          </p>
+        </div>
+      </header>
+
+      <main class="main-layout">
+        <section class="customer-panel">
+          <div class="section-heading">
+            <div>
+              <p class="section-kicker">Customer Ordering</p>
+              <h2>Build an order</h2>
+            </div>
+            <div class="filters">
+              <label class="search-field">
+                <span class="sr-only">Search menu</span>
+                <input
+                  id="menu-search"
+                  type="search"
+                  placeholder="Search espresso, fizz, matcha..."
+                />
+              </label>
+              <select id="category-filter" aria-label="Filter by category">
+                <option value="all">All categories</option>
+              </select>
+            </div>
+          </div>
+
+          <div id="featured-banner" class="featured-banner"></div>
+          <div id="menu-grid" class="menu-grid"></div>
+        </section>
+
+        <aside class="cart-panel card">
+          <div class="section-heading compact">
+            <div>
+              <p class="section-kicker">Current Cart</p>
+              <h2>Checkout</h2>
+            </div>
+          </div>
+
+          <div id="cart-empty" class="empty-state">
+            Add menu items to start an order.
+          </div>
+
+          <div id="cart-items" class="cart-items"></div>
+
+          <div class="cart-summary">
+            <div class="summary-row">
+              <span>Subtotal</span>
+              <strong id="subtotal-value">0</strong>
+            </div>
+            <div class="summary-row">
+              <span>Service</span>
+              <strong id="service-value">0</strong>
+            </div>
+            <div class="summary-row total">
+              <span>Total</span>
+              <strong id="total-value">0</strong>
+            </div>
+          </div>
+
+          <form id="checkout-form" class="checkout-form">
+            <label>
+              Customer name
+              <input id="customer-name" name="customerName" placeholder="Ava" required />
+            </label>
+            <label>
+              Table or pickup
+              <input id="service-mode" name="serviceMode" placeholder="Table 7 or Pickup" required />
+            </label>
+            <label>
+              Phone
+              <input id="customer-phone" name="customerPhone" placeholder="+65 9000 0000" />
+            </label>
+            <label>
+              Notes
+              <textarea
+                id="order-notes"
+                name="orderNotes"
+                rows="3"
+                placeholder="Birthday candles, allergic to nuts, call on arrival..."
+              ></textarea>
+            </label>
+            <button id="place-order" class="primary-button" type="submit">
+              Place Order
+            </button>
+          </form>
+        </aside>
+      </main>
+
+    </div>
+
+    <template id="menu-card-template">
+      <article class="menu-card card">
+        <div class="menu-image" aria-hidden="true"></div>
+        <div class="menu-card-top">
+          <span class="menu-badge"></span>
+          <strong class="menu-price"></strong>
+        </div>
+        <h3 class="menu-title"></h3>
+        <p class="menu-description"></p>
+        <div class="menu-meta"></div>
+        <div class="size-picker-wrap">
+          <div class="size-picker-label">Size</div>
+          <div class="size-picker"></div>
+        </div>
+        <div class="quantity-control">
+          <button class="quantity-button quantity-minus" type="button">-</button>
+          <span class="quantity-value">0</span>
+          <button class="quantity-button quantity-plus" type="button">+</button>
+        </div>
+      </article>
+    </template>
+
+    <template id="cart-item-template">
+      <article class="cart-item">
+        <div>
+          <div class="cart-item-top">
+            <strong class="cart-item-name"></strong>
+            <button class="link-button remove-item" type="button">Remove</button>
+          </div>
+          <p class="cart-item-meta"></p>
+          <p class="cart-item-note"></p>
+        </div>
+        <strong class="cart-item-price"></strong>
+      </article>
+    </template>
+
+    <script src="./app.js"></script>
+  </body>
+</html>

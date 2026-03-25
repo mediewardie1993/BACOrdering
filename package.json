@@ -1,0 +1,9 @@
+{
+  "name": "cafe-ordering-app",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Browser-based restaurant and cafe ordering app prototype",
+  "scripts": {
+    "start": "node server.js"
+  }
+}

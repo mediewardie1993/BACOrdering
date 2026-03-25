@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <title>Begin Again Cafe Mobile</title>
+    <link rel="stylesheet" href="./mobile.css" />
+  </head>
+  <body>
+    <div class="mobile-shell">
+      <header class="mobile-hero">
+        <p class="eyebrow">Begin Again Cafe</p>
+        <h1>Order drinks fast.</h1>
+        <p class="hero-copy">Made for phone screens with quick size selection and thumb-friendly quantity controls.</p>
+      </header>
+
+      <section class="toolbar card">
+        <label class="search-wrap">
+          <span class="sr-only">Search drinks</span>
+          <input id="menu-search" type="search" placeholder="Search drinks..." />
+        </label>
+        <select id="category-filter" aria-label="Filter drinks">
+          <option value="all">All drinks</option>
+        </select>
+      </section>
+
+      <section class="featured card" id="featured-banner"></section>
+
+      <main class="menu-layout">
+        <aside class="category-rail card">
+          <p class="eyebrow">Jump To</p>
+          <nav id="category-nav" class="category-nav"></nav>
+        </aside>
+
+        <div id="menu-scroll" class="menu-scroll">
+          <div id="menu-sections" class="menu-sections"></div>
+        </div>
+      </main>
+
+      <button id="open-cart" class="cart-fab" type="button">
+        <span>View Cart</span>
+        <strong id="fab-count">0</strong>
+      </button>
+
+      <dialog id="cart-sheet" class="cart-sheet">
+        <form method="dialog" class="sheet-shell">
+          <header class="sheet-header">
+            <div>
+              <p class="eyebrow">Your Order</p>
+              <h2>Checkout</h2>
+            </div>
+            <button id="close-cart" class="close-button" type="button">×</button>
+          </header>
+
+          <div id="cart-empty" class="empty-state">Add drinks to start your order.</div>
+          <div id="cart-items" class="cart-items"></div>
+
+          <div class="cart-summary">
+            <div class="summary-row">
+              <span>Subtotal</span>
+              <strong id="subtotal-value">0</strong>
+            </div>
+            <div class="summary-row">
+              <span>Service</span>
+              <strong id="service-value">0</strong>
+            </div>
+            <div class="summary-row total">
+              <span>Total</span>
+              <strong id="total-value">0</strong>
+            </div>
+          </div>
+
+          <div class="checkout-form">
+            <label>
+              Name
+              <input id="customer-name" name="customerName" placeholder="Ava" required />
+            </label>
+            <label>
+              Table or pickup
+              <input id="service-mode" name="serviceMode" placeholder="Table 3 or Pickup" required />
+            </label>
+            <label>
+              Phone
+              <input id="customer-phone" name="customerPhone" placeholder="+65 9000 0000" />
+            </label>
+            <label>
+              Notes
+              <textarea id="order-notes" name="orderNotes" rows="3" placeholder="Optional notes..."></textarea>
+            </label>
+            <button id="place-order" class="primary-button" type="submit">Place Order</button>
+          </div>
+        </form>
+      </dialog>
+    </div>
+
+    <template id="menu-card-template">
+      <article class="drink-card card">
+        <div class="drink-image" aria-hidden="true"></div>
+        <div class="drink-head">
+          <div>
+            <p class="drink-category"></p>
+            <h3 class="drink-name"></h3>
+          </div>
+          <strong class="drink-price"></strong>
+        </div>
+        <div class="size-picker-wrap">
+          <p class="size-label">Size</p>
+          <div class="size-picker"></div>
+        </div>
+        <div class="stepper">
+          <button class="step-button minus-button" type="button">-</button>
+          <span class="step-value">0</span>
+          <button class="step-button plus-button" type="button">+</button>
+        </div>
+      </article>
+    </template>
+
+    <template id="category-section-template">
+      <section class="menu-section">
+        <div class="section-header">
+          <p class="section-kicker"></p>
+          <h2 class="section-title"></h2>
+        </div>
+        <div class="section-items"></div>
+      </section>
+    </template>
+
+    <template id="cart-item-template">
+      <article class="cart-item">
+        <div>
+          <strong class="cart-item-name"></strong>
+          <p class="cart-item-meta"></p>
+        </div>
+        <div class="cart-item-side">
+          <strong class="cart-item-price"></strong>
+          <button class="mini-remove" type="button">-1</button>
+        </div>
+      </article>
+    </template>
+
+    <script src="./mobile.js"></script>
+  </body>
+</html>

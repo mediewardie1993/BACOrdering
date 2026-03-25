@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Begin Again Cafe Staff</title>
+    <link rel="stylesheet" href="./staff.css" />
+  </head>
+  <body>
+    <div class="staff-shell">
+      <header class="staff-hero">
+        <div>
+          <p class="eyebrow">Begin Again Cafe</p>
+          <h1>Staff Order Board</h1>
+          <p class="hero-copy">
+            Receive new orders, move them into preparation, and mark them ready
+            for pickup or table service.
+          </p>
+        </div>
+        <div class="hero-actions">
+          <button id="theme-toggle" class="secondary-button" type="button">Dark Mode</button>
+          <button id="import-orders" class="secondary-button" type="button">Import Customer Orders</button>
+          <button id="seed-orders" class="ghost-button" type="button">Load Demo Orders</button>
+          <button id="clear-orders" class="danger-button" type="button">Clear Board</button>
+        </div>
+      </header>
+
+      <section class="stats-grid">
+        <article class="stat-card">
+          <span class="stat-label">New</span>
+          <strong id="stat-new" class="stat-value">0</strong>
+        </article>
+        <article class="stat-card">
+          <span class="stat-label">Preparing</span>
+          <strong id="stat-preparing" class="stat-value">0</strong>
+        </article>
+        <article class="stat-card">
+          <span class="stat-label">Ready</span>
+          <strong id="stat-ready" class="stat-value">0</strong>
+        </article>
+        <article class="stat-card">
+          <span class="stat-label">Total Queue</span>
+          <strong id="stat-total" class="stat-value">0</strong>
+        </article>
+      </section>
+
+      <section class="board">
+        <div class="board-column">
+          <div class="column-heading">
+            <div>
+              <p class="column-kicker">Incoming</p>
+              <h2>New Orders</h2>
+            </div>
+            <span id="count-new" class="count-pill">0</span>
+          </div>
+          <div id="orders-new" class="order-list"></div>
+        </div>
+
+        <div class="board-column">
+          <div class="column-heading">
+            <div>
+              <p class="column-kicker">In Progress</p>
+              <h2>Preparing</h2>
+            </div>
+            <span id="count-preparing" class="count-pill">0</span>
+          </div>
+          <div id="orders-preparing" class="order-list"></div>
+        </div>
+
+        <div class="board-column">
+          <div class="column-heading">
+            <div>
+              <p class="column-kicker">Pickup</p>
+              <h2>Ready</h2>
+            </div>
+            <span id="count-ready" class="count-pill">0</span>
+          </div>
+          <div id="orders-ready" class="order-list"></div>
+        </div>
+
+        <div class="board-column issue-column">
+          <div class="column-heading">
+            <div>
+              <p class="column-kicker">Needs Review</p>
+              <h2>Unavailable</h2>
+            </div>
+            <span id="count-issue" class="count-pill">0</span>
+          </div>
+          <div id="orders-issue" class="order-list"></div>
+        </div>
+      </section>
+
+      <section class="inventory-panel">
+        <div class="inventory-heading">
+          <div>
+            <p class="column-kicker">Stock Tracking</p>
+            <h2>Inventory Monitor</h2>
+          </div>
+          <p class="inventory-copy">
+            Adjust stock as items are used, mark products unavailable, and watch
+            for low inventory before it hits zero.
+          </p>
+        </div>
+        <div class="inventory-toolbar">
+          <button id="restock-item" class="secondary-button" type="button">Restock</button>
+          <button id="reduce-stock-item" class="ghost-button" type="button">&lt;&lt; Use Stock</button>
+          <button id="mark-item-unavailable" class="danger-button" type="button">Mark Unavailable</button>
+          <p id="inventory-selection" class="inventory-selection">No item selected</p>
+        </div>
+        <div id="inventory-list" class="inventory-list"></div>
+      </section>
+    </div>
+
+    <template id="order-card-template">
+      <article class="order-card">
+        <div class="order-top">
+          <div>
+            <p class="order-ticket"></p>
+            <h3 class="order-name"></h3>
+          </div>
+          <span class="order-total"></span>
+        </div>
+        <p class="order-meta"></p>
+        <div class="order-items"></div>
+        <p class="order-note"></p>
+        <p class="order-alert"></p>
+        <div class="order-actions"></div>
+      </article>
+    </template>
+
+    <template id="inventory-row-template">
+      <button class="inventory-row" type="button">
+        <span class="inventory-cell inventory-category"></span>
+        <span class="inventory-cell inventory-name"></span>
+        <span class="inventory-cell inventory-stock"></span>
+        <span class="inventory-cell inventory-status"></span>
+      </button>
+    </template>
+
+    <script src="./staff.js"></script>
+  </body>
+</html>
