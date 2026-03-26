@@ -12,10 +12,10 @@
         <div class="hero-copy">
           <div class="hero-brand">
             <div class="hero-brand-left">
-              <p class="eyebrow">Begin Again Cafe</p>
-              <div class="hero-bac" aria-label="BAC">BAC</div>
-            </div>
-            <div class="hero-brand-right">
+              <div class="hero-bac-logo-wrap">
+                <img class="hero-bac-logo" src="./bac%20-%20logo.png" alt="BAC logo" />
+              </div>
+              <p class="hero-brand-name">Begin Again Cafe</p>
             </div>
           </div>
         </div>
@@ -29,6 +29,7 @@
               <h2>Build an order</h2>
             </div>
             <div class="filters">
+              <button id="theme-toggle" class="secondary-button" type="button">Dark Mode</button>
               <label class="search-field">
                 <span class="sr-only">Search menu</span>
                 <input
@@ -103,6 +104,11 @@
           </form>
         </aside>
       </main>
+
+      <button id="mobile-checkout-button" class="mobile-checkout-button" type="button">
+        <span>Checkout</span>
+        <strong id="mobile-checkout-count">0</strong>
+      </button>
 
     </div>
 

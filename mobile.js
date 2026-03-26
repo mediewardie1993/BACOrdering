@@ -1,5 +1,6 @@
 const STORAGE_KEY = "begin-again-cafe-mobile-orders.v1";
 const INVENTORY_STORAGE_KEY = "begin-again-cafe-inventory.v1";
+const THEME_STORAGE_KEY = "begin-again-cafe-theme.v1";
 const SERVICE_RATE = 0.08;
 const IMAGE_BASE = "./BAC DRINKS/";
 
@@ -95,6 +96,7 @@ const elements = {
   menuSections: document.getElementById("menu-sections"),
   menuSearch: document.getElementById("menu-search"),
   categoryFilter: document.getElementById("category-filter"),
+  themeToggle: document.getElementById("theme-toggle"),
   openCart: document.getElementById("open-cart"),
   fabCount: document.getElementById("fab-count"),
   cartSheet: document.getElementById("cart-sheet"),
@@ -119,6 +121,7 @@ initialize();
 function initialize() {
   hydrateCategoryFilter();
   bindEvents();
+  applySavedTheme();
   render();
 }
 
@@ -132,6 +135,8 @@ function bindEvents() {
     state.category = event.target.value;
     renderMenu();
   });
+
+  elements.themeToggle.addEventListener("click", toggleTheme);
 
   window.addEventListener("storage", (event) => {
     if (event.key === INVENTORY_STORAGE_KEY) {
@@ -496,4 +501,17 @@ function getInventoryEntry(inventory, item) {
 
 function formatPrice(value) {
   return `${Math.round(value)}`;
+}
+
+function applySavedTheme() {
+  const savedTheme = localStorage.getItem(THEME_STORAGE_KEY);
+  const isDark = savedTheme === "dark";
+  document.body.classList.toggle("dark-mode", isDark);
+  elements.themeToggle.textContent = isDark ? "Light Mode" : "Dark Mode";
+}
+
+function toggleTheme() {
+  const isDark = document.body.classList.toggle("dark-mode");
+  localStorage.setItem(THEME_STORAGE_KEY, isDark ? "dark" : "light");
+  elements.themeToggle.textContent = isDark ? "Light Mode" : "Dark Mode";
 }

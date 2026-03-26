@@ -1,5 +1,6 @@
 const STORAGE_KEY = "begin-again-cafe-orders.v2";
 const INVENTORY_STORAGE_KEY = "begin-again-cafe-inventory.v1";
+const THEME_STORAGE_KEY = "begin-again-cafe-theme.v1";
 const SERVICE_RATE = 0.08;
 const IMAGE_BASE = "./BAC DRINKS/";
 
@@ -92,11 +93,15 @@ const elements = {
   menuGrid: document.getElementById("menu-grid"),
   menuSearch: document.getElementById("menu-search"),
   categoryFilter: document.getElementById("category-filter"),
+  themeToggle: document.getElementById("theme-toggle"),
   cartEmpty: document.getElementById("cart-empty"),
   cartItems: document.getElementById("cart-items"),
+  cartPanel: document.querySelector(".cart-panel"),
   subtotalValue: document.getElementById("subtotal-value"),
   serviceValue: document.getElementById("service-value"),
   totalValue: document.getElementById("total-value"),
+  mobileCheckoutButton: document.getElementById("mobile-checkout-button"),
+  mobileCheckoutCount: document.getElementById("mobile-checkout-count"),
   checkoutForm: document.getElementById("checkout-form"),
   menuCardTemplate: document.getElementById("menu-card-template"),
   cartItemTemplate: document.getElementById("cart-item-template"),
@@ -107,6 +112,7 @@ initialize();
 function initialize() {
   hydrateCategoryFilter();
   bindEvents();
+  applySavedTheme();
   render();
 }
 
@@ -121,6 +127,8 @@ function bindEvents() {
     renderMenu();
   });
 
+  elements.themeToggle.addEventListener("click", toggleTheme);
+
   window.addEventListener("storage", (event) => {
     if (event.key === INVENTORY_STORAGE_KEY) {
       renderMenu();
@@ -128,6 +136,9 @@ function bindEvents() {
   });
 
   elements.checkoutForm.addEventListener("submit", handleCheckout);
+  elements.mobileCheckoutButton.addEventListener("click", () => {
+    elements.cartPanel.scrollIntoView({ behavior: "smooth", block: "start" });
+  });
 }
 
 function hydrateCategoryFilter() {
@@ -263,6 +274,9 @@ function changeQuantity(item, size, delta) {
 function renderCart() {
   elements.cartItems.innerHTML = "";
   const isEmpty = state.cart.length === 0;
+  elements.mobileCheckoutCount.textContent = String(
+    state.cart.reduce((sum, item) => sum + item.quantity, 0),
+  );
   elements.cartEmpty.hidden = !isEmpty;
 
   if (isEmpty) {
@@ -396,4 +410,17 @@ function getInventoryEntry(inventory, item) {
 
 function formatPrice(value) {
   return `${Math.round(value)}`;
+}
+
+function applySavedTheme() {
+  const savedTheme = localStorage.getItem(THEME_STORAGE_KEY);
+  const isDark = savedTheme === "dark";
+  document.body.classList.toggle("dark-mode", isDark);
+  elements.themeToggle.textContent = isDark ? "Light Mode" : "Dark Mode";
+}
+
+function toggleTheme() {
+  const isDark = document.body.classList.toggle("dark-mode");
+  localStorage.setItem(THEME_STORAGE_KEY, isDark ? "dark" : "light");
+  elements.themeToggle.textContent = isDark ? "Light Mode" : "Dark Mode";
 }
