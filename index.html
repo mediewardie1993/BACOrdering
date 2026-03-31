@@ -30,6 +30,9 @@
             </div>
             <div class="filters">
               <button id="theme-toggle" class="secondary-button" type="button">Dark Mode</button>
+              <button id="favorites-filter" class="secondary-button" type="button" aria-pressed="false">
+                Favorites Only
+              </button>
               <label class="search-field">
                 <span class="sr-only">Search menu</span>
                 <input
@@ -43,6 +46,43 @@
               </select>
             </div>
           </div>
+
+          <section class="quick-actions card">
+            <div class="quick-actions-grid">
+              <article class="quick-card loyalty-card">
+                <p class="section-kicker">Loyalty</p>
+                <h3>Points</h3>
+                <div class="loyalty-stats">
+                  <strong id="loyalty-points">0</strong>
+                  <span id="loyalty-next-reward">Next reward: 5 points</span>
+                </div>
+                <div class="progress-track">
+                  <div id="loyalty-progress-bar" class="progress-fill"></div>
+                </div>
+                <p id="loyalty-progress-text" class="quick-copy">0 / 5 points</p>
+                <div id="loyalty-rewards" class="reward-chip-list"></div>
+              </article>
+
+              <article class="quick-card">
+                <p class="section-kicker">Last Order</p>
+                <h3>Reorder</h3>
+                <div id="last-order-card" class="quick-copy empty-inline">No previous order yet.</div>
+                <button id="reorder-last-order" class="secondary-button" type="button">Reorder Last Order</button>
+              </article>
+
+              <article class="quick-card">
+                <p class="section-kicker">Most Ordered</p>
+                <h3>Top Picks</h3>
+                <div id="most-ordered-list" class="quick-list empty-inline">Your top drinks will appear here.</div>
+              </article>
+
+              <article class="quick-card">
+                <p class="section-kicker">Favorites</p>
+                <h3>Saved Items</h3>
+                <div id="favorites-summary" class="quick-list empty-inline">No favorites saved yet.</div>
+              </article>
+            </div>
+          </section>
 
           <div id="menu-grid" class="menu-grid"></div>
         </section>
@@ -110,6 +150,14 @@
         <strong id="mobile-checkout-count">0</strong>
       </button>
 
+      <section id="success-toast" class="success-toast hidden" aria-live="polite">
+        <div class="success-toast-card">
+          <p class="section-kicker">Order Success</p>
+          <h3 id="success-toast-title">Order placed</h3>
+          <p id="success-toast-body"></p>
+        </div>
+      </section>
+
     </div>
 
     <template id="menu-card-template">
@@ -117,7 +165,10 @@
         <div class="menu-image" aria-hidden="true"></div>
         <div class="menu-card-top">
           <span class="menu-badge"></span>
-          <strong class="menu-price"></strong>
+          <div class="menu-card-actions">
+            <button class="favorite-toggle" type="button" aria-pressed="false" aria-label="Toggle favorite">♡</button>
+            <strong class="menu-price"></strong>
+          </div>
         </div>
         <h3 class="menu-title"></h3>
         <p class="menu-description"></p>
@@ -143,6 +194,11 @@
           </div>
           <p class="cart-item-meta"></p>
           <p class="cart-item-note"></p>
+          <div class="cart-item-controls">
+            <button class="quantity-button cart-minus" type="button">-</button>
+            <span class="cart-quantity-value">0</span>
+            <button class="quantity-button cart-plus" type="button">+</button>
+          </div>
         </div>
         <strong class="cart-item-price"></strong>
       </article>

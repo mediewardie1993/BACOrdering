@@ -18,7 +18,14 @@
           </p>
         </div>
         <div class="hero-actions">
-          <button id="theme-toggle" class="secondary-button" type="button">Dark Mode</button>
+          <select id="theme-select" class="theme-select" aria-label="Theme">
+            <option value="classic">Classic</option>
+            <option value="dark">Dark</option>
+            <option value="charcoal">Charcoal</option>
+            <option value="mist-blue">Mist Blue</option>
+            <option value="evident-pink">Evident Pink</option>
+            <option value="sage">Sage</option>
+          </select>
           <button id="import-orders" class="secondary-button" type="button">Import Customer Orders</button>
           <button id="seed-orders" class="ghost-button" type="button">Load Demo Orders</button>
           <button id="clear-orders" class="danger-button" type="button">Clear Board</button>
@@ -109,6 +116,80 @@
         </div>
         <div id="inventory-list" class="inventory-list"></div>
       </section>
+
+      <section class="menu-panel">
+        <div class="inventory-heading">
+          <div>
+            <p class="column-kicker">Customer App</p>
+            <h2>Menu Control</h2>
+          </div>
+          <p class="inventory-copy">
+            Update menu prices and choose the featured drink shown at the top of the customer app.
+          </p>
+        </div>
+
+        <div class="menu-manager-grid">
+          <div class="menu-manager-card">
+            <h3>Menu Prices</h3>
+            <div class="inventory-toolbar">
+              <button id="save-menu-price" class="primary-button" type="button">Save Price</button>
+              <button id="reset-menu-price" class="secondary-button" type="button">Reset Price</button>
+              <p id="menu-selection" class="inventory-selection">No menu item selected</p>
+            </div>
+            <label class="panel-field">
+              <span>Base price</span>
+              <input id="menu-price-input" type="number" min="0" step="1" placeholder="Enter new price" />
+            </label>
+            <div id="menu-list" class="inventory-list"></div>
+          </div>
+
+          <div class="menu-manager-card">
+            <h3>Featured Drink</h3>
+            <div class="featured-editor">
+              <label class="panel-field">
+                <span>Menu item</span>
+                <select id="featured-item-select"></select>
+              </label>
+              <label class="panel-field">
+                <span>Headline</span>
+                <input id="featured-title-input" type="text" placeholder="Featured drink" />
+              </label>
+              <label class="panel-field">
+                <span>Caption</span>
+                <textarea id="featured-copy-input" rows="4" placeholder="Tell customers what makes it special."></textarea>
+              </label>
+              <label class="panel-field">
+                <span>Promo media</span>
+                <input id="featured-media-input" type="file" accept="image/*,video/*" />
+              </label>
+              <label class="panel-field">
+                <span>Special discount</span>
+                <input id="featured-discount-input" type="number" min="0" step="1" placeholder="0" />
+              </label>
+              <div id="featured-preview" class="featured-preview">
+                <p class="order-meta">No featured image selected.</p>
+              </div>
+              <div class="inventory-toolbar">
+                <button id="save-featured-drink" class="primary-button" type="button">Save Featured</button>
+                <button id="clear-featured-drink" class="danger-button" type="button">Clear Featured</button>
+              </div>
+              <p id="featured-save-status" class="inventory-selection">Featured drink not saved yet.</p>
+            </div>
+          </div>
+
+          <div class="menu-manager-card">
+            <h3>Redeemables</h3>
+            <div class="featured-editor">
+              <p class="inventory-copy">Set the prizes customers can redeem and the number of points required.</p>
+              <div id="redeemables-list" class="redeemables-list"></div>
+              <div class="inventory-toolbar">
+                <button id="save-redeemables" class="primary-button" type="button">Save Redeemables</button>
+                <p id="redeemables-save-status" class="inventory-selection">Redeemables not saved yet.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
     </div>
 
     <template id="order-card-template">
@@ -137,6 +218,18 @@
       </button>
     </template>
 
+    <template id="menu-row-template">
+      <button class="inventory-row menu-row" type="button">
+        <span class="inventory-cell inventory-category"></span>
+        <span class="inventory-cell inventory-name"></span>
+        <span class="inventory-cell inventory-stock"></span>
+        <span class="inventory-cell inventory-status"></span>
+      </button>
+    </template>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="./supabase-config.js"></script>
+    <script src="./supabase-sync.js"></script>
     <script src="./staff.js"></script>
   </body>
 </html>

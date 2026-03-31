@@ -9,13 +9,20 @@
   <body>
     <div class="mobile-shell">
       <header class="mobile-hero">
-        <p class="eyebrow">Begin Again Cafe</p>
-        <h1>Order drinks fast.</h1>
-        <p class="hero-copy">Made for phone screens with quick size selection and thumb-friendly quantity controls.</p>
+        <img class="hero-logo" src="./bac - logo.png" alt="BAC" />
+        <p class="hero-copy brand-copy">BEGIN AGAIN CAFE</p>
       </header>
 
       <section class="toolbar card">
-        <button id="theme-toggle" class="theme-toggle" type="button">Dark Mode</button>
+        <select id="theme-select" class="theme-toggle" aria-label="Theme">
+          <option value="classic">Classic</option>
+          <option value="dark">Dark</option>
+          <option value="charcoal">Charcoal</option>
+          <option value="mist-blue">Mist Blue</option>
+          <option value="evident-pink">Evident Pink</option>
+          <option value="sage">Sage</option>
+        </select>
+        <button id="favorites-filter" class="toolbar-button" type="button" aria-pressed="false">Favorites Only</button>
         <label class="search-wrap">
           <span class="sr-only">Search drinks</span>
           <input id="menu-search" type="search" placeholder="Search drinks..." />
@@ -26,6 +33,76 @@
       </section>
 
       <section class="featured card" id="featured-banner"></section>
+
+      <section id="active-order-banner" class="active-order-banner card hidden" aria-live="polite">
+        <p class="eyebrow">Current Order</p>
+        <h3 id="active-order-title">Order in progress</h3>
+        <p id="active-order-copy" class="quick-copy"></p>
+      </section>
+
+      <section class="quick-actions card">
+        <button id="quick-drawer-toggle" class="quick-drawer-toggle" type="button" aria-expanded="false" aria-controls="quick-drawer-body">
+          <span>Rewards, reorder, and favorites</span>
+          <strong id="quick-drawer-label">Open</strong>
+        </button>
+
+        <div id="quick-drawer-body" class="quick-drawer-body" hidden>
+        <div class="quick-tabs" role="tablist" aria-label="Quick actions">
+          <button class="quick-tab is-active" id="quick-tab-loyalty" type="button" role="tab" aria-selected="true" aria-controls="quick-panel-loyalty" data-panel="loyalty">Loyalty</button>
+          <button class="quick-tab" id="quick-tab-last-order" type="button" role="tab" aria-selected="false" aria-controls="quick-panel-last-order" data-panel="last-order">Last Order</button>
+          <button class="quick-tab" id="quick-tab-most-ordered" type="button" role="tab" aria-selected="false" aria-controls="quick-panel-most-ordered" data-panel="most-ordered">Most Ordered</button>
+          <button class="quick-tab" id="quick-tab-favorites" type="button" role="tab" aria-selected="false" aria-controls="quick-panel-favorites" data-panel="favorites">Favorites</button>
+          <button class="quick-tab" id="quick-tab-redeem" type="button" role="tab" aria-selected="false" aria-controls="quick-panel-redeem" data-panel="redeem">Redeem</button>
+        </div>
+
+        <div class="quick-panels">
+          <article class="quick-card quick-panel is-active" id="quick-panel-loyalty" role="tabpanel" aria-labelledby="quick-tab-loyalty" data-panel="loyalty">
+            <p class="eyebrow">Loyalty</p>
+            <h3>Points</h3>
+            <div class="loyalty-stats">
+              <strong id="loyalty-points">0</strong>
+              <span id="loyalty-next-reward">Next reward: 5 points</span>
+            </div>
+            <div class="progress-track">
+              <div id="loyalty-progress-bar" class="progress-fill"></div>
+            </div>
+            <p id="loyalty-progress-text" class="quick-copy">0 / 5 points</p>
+          </article>
+
+          <article class="quick-card quick-panel" id="quick-panel-last-order" role="tabpanel" aria-labelledby="quick-tab-last-order" data-panel="last-order" hidden>
+            <p class="eyebrow">Last Order</p>
+            <h3>Reorder</h3>
+            <div id="last-order-card" class="quick-copy empty-inline">No previous order yet.</div>
+            <button id="reorder-last-order" class="toolbar-button" type="button">Reorder Last Order</button>
+          </article>
+
+          <article class="quick-card quick-panel" id="quick-panel-most-ordered" role="tabpanel" aria-labelledby="quick-tab-most-ordered" data-panel="most-ordered" hidden>
+            <p class="eyebrow">Most Ordered</p>
+            <h3>Top Picks</h3>
+            <div id="most-ordered-list" class="quick-list empty-inline">Your top drinks will appear here.</div>
+          </article>
+
+          <article class="quick-card quick-panel" id="quick-panel-favorites" role="tabpanel" aria-labelledby="quick-tab-favorites" data-panel="favorites" hidden>
+            <p class="eyebrow">Favorites</p>
+            <h3>Saved Items</h3>
+            <div id="favorites-summary" class="quick-list empty-inline">No favorites saved yet.</div>
+          </article>
+
+          <article class="quick-card quick-panel" id="quick-panel-redeem" role="tabpanel" aria-labelledby="quick-tab-redeem" data-panel="redeem" hidden>
+            <p class="eyebrow">Redeem</p>
+            <h3>Available Rewards</h3>
+            <div class="reward-card">
+              <div class="reward-card-top">
+                <span id="loyalty-level-badge" class="reward-points">New User</span>
+                <span id="loyalty-orders-count" class="reward-status">0 orders</span>
+              </div>
+              <div id="loyalty-benefits" class="reward-chip-list"></div>
+            </div>
+            <div id="redeemables-summary" class="quick-list empty-inline">No redeemable prizes yet.</div>
+          </article>
+        </div>
+        </div>
+      </section>
 
       <main class="menu-layout">
         <aside class="category-rail card">
@@ -50,7 +127,7 @@
               <p class="eyebrow">Your Order</p>
               <h2>Checkout</h2>
             </div>
-            <button id="close-cart" class="close-button" type="button">×</button>
+            <button id="close-cart" class="close-button" type="button">&times;</button>
           </header>
 
           <div id="cart-empty" class="empty-state">Add drinks to start your order.</div>
@@ -92,6 +169,32 @@
           </div>
         </form>
       </dialog>
+
+      <section id="success-screen" class="success-screen hidden" aria-live="polite">
+        <div class="success-card">
+          <p class="eyebrow">Order Confirmed</p>
+          <h2>Order placed!</h2>
+          <p id="success-estimate" class="success-estimate"></p>
+          <div class="success-summary">
+            <div>
+              <span class="success-label">Order No.</span>
+              <strong id="success-order-number"></strong>
+            </div>
+            <div>
+              <span class="success-label">Total</span>
+              <strong id="success-total"></strong>
+            </div>
+          </div>
+          <div class="success-promo card">
+            <p class="eyebrow">Next Time</p>
+            <strong>Collect your BAC moments.</strong>
+            <p>Ask the barista about loyalty rewards or today's special add-on when you pick up your drink.</p>
+          </div>
+          <div class="success-actions">
+            <button id="track-another-order" class="primary-button" type="button">Order Again</button>
+          </div>
+        </div>
+      </section>
     </div>
 
     <template id="menu-card-template">
@@ -102,8 +205,12 @@
             <p class="drink-category"></p>
             <h3 class="drink-name"></h3>
           </div>
-          <strong class="drink-price"></strong>
+          <div class="drink-card-actions">
+            <button class="favorite-toggle" type="button" aria-pressed="false" aria-label="Toggle favorite">&#9825;</button>
+            <strong class="drink-price"></strong>
+          </div>
         </div>
+        <p class="drink-meta"></p>
         <div class="size-picker-wrap">
           <p class="size-label">Size</p>
           <div class="size-picker"></div>
@@ -128,17 +235,26 @@
 
     <template id="cart-item-template">
       <article class="cart-item">
-        <div>
+        <div class="cart-item-main">
           <strong class="cart-item-name"></strong>
           <p class="cart-item-meta"></p>
+          <div class="cart-item-controls">
+            <button class="mini-step mini-minus" type="button">-</button>
+            <span class="cart-quantity-value">0</span>
+            <button class="mini-step mini-plus" type="button">+</button>
+            <button class="mini-remove" type="button">Remove</button>
+          </div>
         </div>
         <div class="cart-item-side">
           <strong class="cart-item-price"></strong>
-          <button class="mini-remove" type="button">-1</button>
         </div>
       </article>
     </template>
 
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="./supabase-config.js"></script>
+    <script src="./supabase-sync.js"></script>
     <script src="./mobile.js"></script>
   </body>
 </html>
+
