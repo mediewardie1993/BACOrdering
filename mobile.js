@@ -79,6 +79,17 @@ const MILK_OPTIONS = [
   { id: "regular", label: "Reg Milk", delta: 0 },
   { id: "oat", label: "Oatmilk", delta: "dynamic" },
 ];
+const CATEGORY_DEFINITIONS = [
+  { id: "hot", label: "Hot" },
+  { id: "cold", label: "Cold" },
+  { id: "milk", label: "Milk" },
+  { id: "fizz", label: "Fizz" },
+  { id: "tea", label: "Tea" },
+  { id: "matcha", label: "Matcha" },
+  { id: "food", label: "Food", comingSoon: true },
+  { id: "snacks", label: "Snacks", comingSoon: true },
+  { id: "addons", label: "Addons", comingSoon: true },
+];
 let orderPollingHandle = null;
 
 const standardSizes = [
@@ -562,15 +573,14 @@ async function hashPassword(value) {
 
 function hydrateCategoryFilter() {
   const currentValue = elements.categoryFilter.value || "all";
-  const categories = [...new Set(getEffectiveMenuItems().map((item) => item.category))];
   elements.categoryFilter.innerHTML = '<option value="all">All drinks</option>';
-  categories.forEach((category) => {
+  CATEGORY_DEFINITIONS.forEach((category) => {
     const option = document.createElement("option");
-    option.value = category;
-    option.textContent = category;
+    option.value = category.id;
+    option.textContent = category.label;
     elements.categoryFilter.appendChild(option);
   });
-  elements.categoryFilter.value = categories.includes(currentValue) || currentValue === "all" ? currentValue : "all";
+  elements.categoryFilter.value = CATEGORY_DEFINITIONS.some((category) => category.id === currentValue) || currentValue === "all" ? currentValue : "all";
 }
 
 function renderAll() {
@@ -640,14 +650,14 @@ function renderMenu() {
   const effectiveMenuItems = getEffectiveMenuItems();
   const featured = storage.getFeaturedDrink();
   const visibleItems = effectiveMenuItems.filter((item) => {
-    const matchesCategory = state.category === "all" || item.category === state.category;
+    const matchesCategory = state.category === "all" || getCategoryDefinitionByRaw(item.category).id === state.category;
     const haystack = `${item.name} ${item.category}`.toLowerCase();
     const matchesSearch = !state.search || haystack.includes(state.search);
     const matchesFavorites = !state.favoritesOnly || state.favorites.has(item.id);
     return matchesCategory && matchesSearch && matchesFavorites;
   });
 
-  if (visibleItems.length === 0) {
+  if (visibleItems.length === 0 && state.category === "all") {
     const empty = document.createElement("div");
     empty.className = "empty-state";
     empty.textContent = state.favoritesOnly
@@ -657,26 +667,41 @@ function renderMenu() {
     return;
   }
 
-  const groupedItems = groupByCategory(visibleItems);
-  groupedItems.forEach(([category, items], index) => {
-    const sectionId = slugify(category);
+  const targetCategories = state.category === "all"
+    ? CATEGORY_DEFINITIONS
+    : CATEGORY_DEFINITIONS.filter((category) => category.id === state.category);
+
+  targetCategories.forEach((category, index) => {
+    const items = visibleItems.filter((item) => getCategoryDefinitionByRaw(item.category).id === category.id);
+    const sectionId = slugify(category.id);
     const sectionFragment = elements.categorySectionTemplate.content.cloneNode(true);
     const section = sectionFragment.querySelector(".menu-section");
     section.id = sectionId;
     section.querySelector(".section-kicker").textContent = `Category ${index + 1}`;
-    section.querySelector(".section-title").textContent = category;
+    section.querySelector(".section-title").textContent = category.label;
     const sectionItems = section.querySelector(".section-items");
 
-    items.forEach((item) => {
-      sectionItems.appendChild(buildMenuCard(applyFeaturedPricing(item, featured), inventory));
-    });
+    if (items.length > 0) {
+      items.forEach((item) => {
+        sectionItems.appendChild(buildMenuCard(applyFeaturedPricing(item, featured), inventory));
+      });
+    } else {
+      const empty = document.createElement("div");
+      empty.className = "empty-state";
+      empty.textContent = category.comingSoon
+        ? `${category.label} coming soon.`
+        : state.search || state.favoritesOnly
+          ? `No ${category.label.toLowerCase()} items match this filter right now.`
+          : `No ${category.label.toLowerCase()} items available right now.`;
+      sectionItems.appendChild(empty);
+    }
 
     elements.menuSections.appendChild(sectionFragment);
 
     const navButton = document.createElement("button");
     navButton.type = "button";
     navButton.className = `category-link${index === 0 ? " active" : ""}`;
-    navButton.textContent = shortCategoryLabel(category);
+    navButton.textContent = category.label;
     navButton.dataset.target = sectionId;
     navButton.addEventListener("click", () => {
       document.getElementById(sectionId)?.scrollIntoView({ behavior: "smooth", block: "start" });
@@ -1446,16 +1471,36 @@ function getUnitPrice(item, size, milk) {
 function groupByCategory(items) {
   const grouped = new Map();
   items.forEach((item) => {
-    if (!grouped.has(item.category)) {
-      grouped.set(item.category, []);
+    const category = getCategoryDefinitionByRaw(item.category);
+    if (!grouped.has(category.id)) {
+      grouped.set(category.id, { category, items: [] });
     }
-    grouped.get(item.category).push(item);
+    grouped.get(category.id).items.push(item);
   });
-  return Array.from(grouped.entries());
+  return CATEGORY_DEFINITIONS
+    .map((category) => grouped.get(category.id))
+    .filter(Boolean)
+    .map((entry) => [entry.category.label, entry.items]);
 }
 
 function shortCategoryLabel(category) {
-  return category.replace("Espresso ", "").replace("Black ", "");
+  return getCategoryDefinitionByRaw(category).label;
+}
+
+function getCategoryDefinitionByRaw(rawCategory) {
+  const categoryId = {
+    "Espresso Hot": "hot",
+    "Espresso Cold": "cold",
+    Milk: "milk",
+    Fizz: "fizz",
+    "Black Tea": "tea",
+    Matcha: "matcha",
+    Food: "food",
+    Snacks: "snacks",
+    Addons: "addons",
+  }[rawCategory] || "hot";
+
+  return CATEGORY_DEFINITIONS.find((category) => category.id === categoryId) || CATEGORY_DEFINITIONS[0];
 }
 
 function slugify(value) {

@@ -17,6 +17,17 @@ const DEFAULT_REDEEMABLES = [
   { id: "reward-4", title: "Premium drink or combo upgrade", points: 20, description: "Best used for loyal regulars." },
 ];
 const ACTIVE_BOARD_STATUSES = new Set(["new", "preparing", "ready", "issue"]);
+const CATEGORY_DEFINITIONS = [
+  { id: "hot", label: "Hot" },
+  { id: "cold", label: "Cold" },
+  { id: "milk", label: "Milk" },
+  { id: "fizz", label: "Fizz" },
+  { id: "tea", label: "Tea" },
+  { id: "matcha", label: "Matcha" },
+  { id: "food", label: "Food", comingSoon: true },
+  { id: "snacks", label: "Snacks", comingSoon: true },
+  { id: "addons", label: "Addons", comingSoon: true },
+];
 let remoteOrderPollingHandle = null;
 
 const menuCatalog = [
@@ -228,7 +239,7 @@ function renderMenuManager() {
   elements.oatmilkPriceInput.value = String(state.oatmilkSurcharge);
   const visibleItems = state.menuCategory === "all"
     ? state.menuConfig
-    : state.menuConfig.filter((item) => item.category === state.menuCategory);
+    : state.menuConfig.filter((item) => getCategoryDefinitionByRaw(item.category).id === state.menuCategory);
   const groupedItems = groupMenuConfigByCategory(visibleItems);
 
   groupedItems.forEach(([category, items]) => {
@@ -255,16 +266,25 @@ function renderMenuManager() {
       elements.menuList.appendChild(fragment);
     });
   });
+
+  if (visibleItems.length === 0 && state.menuCategory !== "all") {
+    const category = CATEGORY_DEFINITIONS.find((entry) => entry.id === state.menuCategory);
+    const empty = document.createElement("div");
+    empty.className = "empty-state";
+    empty.textContent = category?.comingSoon
+      ? `${category.label} coming soon.`
+      : `No ${category?.label?.toLowerCase() || "menu"} items in this category yet.`;
+    elements.menuList.appendChild(empty);
+  }
 }
 
 function hydrateMenuCategoryFilter() {
-  const categories = [...new Set(state.menuConfig.map((item) => item.category))];
-  const currentValue = categories.includes(state.menuCategory) ? state.menuCategory : "all";
+  const currentValue = CATEGORY_DEFINITIONS.some((category) => category.id === state.menuCategory) ? state.menuCategory : "all";
   elements.menuCategoryFilter.innerHTML = '<option value="all">Show all</option>';
-  categories.forEach((category) => {
+  CATEGORY_DEFINITIONS.forEach((category) => {
     const option = document.createElement("option");
-    option.value = category;
-    option.textContent = category;
+    option.value = category.id;
+    option.textContent = category.label;
     elements.menuCategoryFilter.appendChild(option);
   });
   elements.menuCategoryFilter.value = currentValue;
@@ -279,12 +299,32 @@ function handleMenuCategoryChange(event) {
 function groupMenuConfigByCategory(items) {
   const grouped = new Map();
   items.forEach((item) => {
-    if (!grouped.has(item.category)) {
-      grouped.set(item.category, []);
+    const category = getCategoryDefinitionByRaw(item.category);
+    if (!grouped.has(category.id)) {
+      grouped.set(category.id, { label: category.label, items: [] });
     }
-    grouped.get(item.category).push(item);
+    grouped.get(category.id).items.push(item);
   });
-  return Array.from(grouped.entries());
+  return CATEGORY_DEFINITIONS
+    .map((category) => grouped.get(category.id))
+    .filter(Boolean)
+    .map((entry) => [entry.label, entry.items]);
+}
+
+function getCategoryDefinitionByRaw(rawCategory) {
+  const categoryId = {
+    "Espresso Hot": "hot",
+    "Espresso Cold": "cold",
+    Milk: "milk",
+    Fizz: "fizz",
+    "Black Tea": "tea",
+    Matcha: "matcha",
+    Food: "food",
+    Snacks: "snacks",
+    Addons: "addons",
+  }[rawCategory] || "hot";
+
+  return CATEGORY_DEFINITIONS.find((category) => category.id === categoryId) || CATEGORY_DEFINITIONS[0];
 }
 
 function renderFeaturedEditor() {
