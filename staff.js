@@ -3,6 +3,7 @@ const INVENTORY_STORAGE_KEY = "begin-again-cafe-inventory.v1";
 const MENU_CONFIG_STORAGE_KEY = "begin-again-cafe-menu-config.v1";
 const FEATURED_DRINK_STORAGE_KEY = "begin-again-cafe-featured-drink.v1";
 const REDEEMABLES_STORAGE_KEY = "begin-again-cafe-redeemables.v1";
+const OATMILK_SURCHARGE_STORAGE_KEY = "begin-again-cafe-oatmilk-surcharge.v1";
 const THEME_STORAGE_KEY = "begin-again-cafe-staff-theme.v2";
 const CUSTOMER_STORAGE_KEYS = [
   "begin-again-cafe-orders.v2",
@@ -92,6 +93,8 @@ const state = {
   menuConfig: loadMenuConfig(),
   featuredDrink: loadFeaturedDrink(),
   redeemables: loadRedeemables(),
+  oatmilkSurcharge: loadOatmilkSurcharge(),
+  menuCategory: "all",
   selectedInventoryId: null,
   selectedMenuId: null,
   pendingFeaturedAsset: "",
@@ -112,6 +115,8 @@ const elements = {
   resetMenuPrice: document.getElementById("reset-menu-price"),
   menuSelection: document.getElementById("menu-selection"),
   menuPriceInput: document.getElementById("menu-price-input"),
+  oatmilkPriceInput: document.getElementById("oatmilk-price-input"),
+  menuCategoryFilter: document.getElementById("menu-category-filter"),
   menuList: document.getElementById("menu-list"),
   featuredItemSelect: document.getElementById("featured-item-select"),
   featuredTitleInput: document.getElementById("featured-title-input"),
@@ -169,6 +174,7 @@ function bindEvents() {
   elements.markItemUnavailable.addEventListener("click", toggleSelectedUnavailable);
   elements.saveMenuPrice.addEventListener("click", saveSelectedMenuPrice);
   elements.resetMenuPrice.addEventListener("click", resetSelectedMenuPrice);
+  elements.menuCategoryFilter.addEventListener("change", handleMenuCategoryChange);
   elements.featuredItemSelect.addEventListener("change", handleFeaturedSelectionChange);
   elements.featuredMediaInput.addEventListener("change", handleFeaturedMediaInput);
   elements.saveFeaturedDrink.addEventListener("click", saveFeaturedDrinkConfig);
@@ -213,27 +219,72 @@ function renderInventory() {
 
 function renderMenuManager() {
   elements.menuList.innerHTML = "";
+  hydrateMenuCategoryFilter();
   const selectedItem = getSelectedMenuItem();
   elements.menuSelection.textContent = selectedItem
     ? `Selected: ${selectedItem.name} (${selectedItem.category})`
     : "No menu item selected";
   elements.menuPriceInput.value = selectedItem ? String(selectedItem.price) : "";
+  elements.oatmilkPriceInput.value = String(state.oatmilkSurcharge);
+  const visibleItems = state.menuCategory === "all"
+    ? state.menuConfig
+    : state.menuConfig.filter((item) => item.category === state.menuCategory);
+  const groupedItems = groupMenuConfigByCategory(visibleItems);
 
-  state.menuConfig.forEach((item) => {
-    const fragment = elements.menuRowTemplate.content.cloneNode(true);
-    const row = fragment.querySelector(".menu-row");
-    const isCustom = item.price !== item.defaultPrice;
-    row.classList.toggle("selected", item.id === state.selectedMenuId);
-    row.addEventListener("click", () => {
-      state.selectedMenuId = item.id;
-      renderMenuManager();
+  groupedItems.forEach(([category, items]) => {
+    if (state.menuCategory === "all") {
+      const heading = document.createElement("p");
+      heading.className = "menu-group-heading";
+      heading.textContent = category;
+      elements.menuList.appendChild(heading);
+    }
+
+    items.forEach((item) => {
+      const fragment = elements.menuRowTemplate.content.cloneNode(true);
+      const row = fragment.querySelector(".menu-row");
+      const isCustom = item.price !== item.defaultPrice;
+      row.classList.toggle("selected", item.id === state.selectedMenuId);
+      row.addEventListener("click", () => {
+        state.selectedMenuId = item.id;
+        renderMenuManager();
+      });
+      fragment.querySelector(".inventory-category").textContent = item.category;
+      fragment.querySelector(".inventory-name").textContent = item.name;
+      fragment.querySelector(".inventory-stock").textContent = formatPrice(item.price);
+      fragment.querySelector(".inventory-status").textContent = isCustom ? `Custom ${formatPrice(item.defaultPrice)}` : "Base";
+      elements.menuList.appendChild(fragment);
     });
-    fragment.querySelector(".inventory-category").textContent = item.category;
-    fragment.querySelector(".inventory-name").textContent = item.name;
-    fragment.querySelector(".inventory-stock").textContent = formatPrice(item.price);
-    fragment.querySelector(".inventory-status").textContent = isCustom ? `Custom ${formatPrice(item.defaultPrice)}` : "Base";
-    elements.menuList.appendChild(fragment);
   });
+}
+
+function hydrateMenuCategoryFilter() {
+  const categories = [...new Set(state.menuConfig.map((item) => item.category))];
+  const currentValue = categories.includes(state.menuCategory) ? state.menuCategory : "all";
+  elements.menuCategoryFilter.innerHTML = '<option value="all">Show all</option>';
+  categories.forEach((category) => {
+    const option = document.createElement("option");
+    option.value = category;
+    option.textContent = category;
+    elements.menuCategoryFilter.appendChild(option);
+  });
+  elements.menuCategoryFilter.value = currentValue;
+  state.menuCategory = currentValue;
+}
+
+function handleMenuCategoryChange(event) {
+  state.menuCategory = event.target.value;
+  renderMenuManager();
+}
+
+function groupMenuConfigByCategory(items) {
+  const grouped = new Map();
+  items.forEach((item) => {
+    if (!grouped.has(item.category)) {
+      grouped.set(item.category, []);
+    }
+    grouped.get(item.category).push(item);
+  });
+  return Array.from(grouped.entries());
 }
 
 function renderFeaturedEditor() {
@@ -369,7 +420,7 @@ function renderColumn(container, orders) {
         : inventoryItem && inventoryItem.stock <= 3
           ? " | low stock"
           : "";
-      line.textContent = `${item.quantity}x ${item.name}${item.sizeLabel ? ` | ${item.sizeLabel}` : ""}${stateLabel}`;
+      line.textContent = `${item.quantity}x ${item.name}${item.sizeLabel ? ` | ${item.sizeLabel}` : ""}${item.milkType ? ` | ${item.milkType}` : ""}${stateLabel}`;
       itemsContainer.appendChild(line);
     });
 
@@ -494,16 +545,24 @@ function toggleSelectedUnavailable() {
 function saveSelectedMenuPrice() {
   const selectedItem = getSelectedMenuItem();
   const nextPrice = Number(elements.menuPriceInput.value);
+  const nextOatmilkSurcharge = Number(elements.oatmilkPriceInput.value);
   if (!selectedItem || !Number.isFinite(nextPrice) || nextPrice < 0) {
     window.alert("Enter a valid price.");
+    return;
+  }
+  if (!Number.isFinite(nextOatmilkSurcharge) || nextOatmilkSurcharge < 0) {
+    window.alert("Enter a valid oatmilk add-on price.");
     return;
   }
 
   state.menuConfig = state.menuConfig.map((item) =>
     item.id === selectedItem.id ? { ...item, price: Math.round(nextPrice) } : item,
   );
+  state.oatmilkSurcharge = Math.round(nextOatmilkSurcharge);
   persistMenuConfig();
+  persistOatmilkSurcharge();
   syncMenuItemPrice(state.menuConfig.find((item) => item.id === selectedItem.id));
+  syncOatmilkSurcharge(state.oatmilkSurcharge);
   renderMenuManager();
   renderFeaturedEditor();
 }
@@ -938,6 +997,20 @@ function loadRedeemables() {
   }
 }
 
+function loadOatmilkSurcharge() {
+  const raw = localStorage.getItem(OATMILK_SURCHARGE_STORAGE_KEY);
+  if (!raw) {
+    return 0;
+  }
+
+  try {
+    return Math.max(0, Number(JSON.parse(raw) || 0));
+  } catch (error) {
+    console.error("Failed to load oatmilk surcharge", error);
+    return 0;
+  }
+}
+
 function persistFeaturedDrink() {
   if (!state.featuredDrink) {
     return;
@@ -948,6 +1021,10 @@ function persistFeaturedDrink() {
 
 function persistRedeemables() {
   localStorage.setItem(REDEEMABLES_STORAGE_KEY, JSON.stringify(state.redeemables));
+}
+
+function persistOatmilkSurcharge() {
+  localStorage.setItem(OATMILK_SURCHARGE_STORAGE_KEY, JSON.stringify(state.oatmilkSurcharge));
 }
 
 function formatPrice(value) {
@@ -980,10 +1057,12 @@ async function hydrateRemoteConfig() {
     { data: remoteMenu, error: menuError },
     { data: remoteFeatured, error: featuredError },
     { data: remoteRedeemables, error: redeemablesError },
+    { data: remoteOatmilk, error: oatmilkError },
   ] = await Promise.all([
     window.bacSupabase.loadMenuConfig(),
     window.bacSupabase.loadFeaturedDrink(),
     window.bacSupabase.loadRedeemables ? window.bacSupabase.loadRedeemables() : Promise.resolve({ data: null, error: null }),
+    window.bacSupabase.loadOatmilkSurcharge ? window.bacSupabase.loadOatmilkSurcharge() : Promise.resolve({ data: null, error: null }),
   ]);
 
   if (!menuError && Array.isArray(remoteMenu) && remoteMenu.length > 0) {
@@ -1004,6 +1083,11 @@ async function hydrateRemoteConfig() {
   if (!redeemablesError && Array.isArray(remoteRedeemables) && remoteRedeemables.length > 0) {
     state.redeemables = remoteRedeemables;
     persistRedeemables();
+  }
+
+  if (!oatmilkError && remoteOatmilk !== null && remoteOatmilk !== undefined) {
+    state.oatmilkSurcharge = Math.max(0, Number(remoteOatmilk || 0));
+    persistOatmilkSurcharge();
   }
 
   renderMenuManager();
@@ -1045,6 +1129,18 @@ async function syncRedeemables(redeemables) {
   if (error) {
     console.error("Failed to sync redeemables", error);
     elements.redeemablesSaveStatus.textContent = "Redeemables saved locally only.";
+  }
+}
+
+async function syncOatmilkSurcharge(amount) {
+  if (!window.bacSupabase?.enabled) {
+    return;
+  }
+
+  const { error } = await window.bacSupabase.saveOatmilkSurcharge(amount);
+  if (error) {
+    console.error("Failed to sync oatmilk surcharge", error);
+    elements.menuSelection.textContent = "Oatmilk add-on saved locally only.";
   }
 }
 

@@ -11,6 +11,8 @@ const STORAGE_KEYS = {
   customerProfile: "begin-again-cafe-mobile-customer-profile.v1",
   redeemables: "begin-again-cafe-redeemables.v1",
   activeOrder: "begin-again-cafe-mobile-active-order.v1",
+  accountSession: "begin-again-cafe-mobile-account-session.v1",
+  oatmilkSurcharge: "begin-again-cafe-oatmilk-surcharge.v1",
 };
 
 const SERVICE_RATE = 0.08;
@@ -72,6 +74,11 @@ const DEFAULT_REDEEMABLES = [
   { id: "reward-4", title: "Premium drink or combo upgrade", points: 20, description: "Best used for loyal regulars." },
 ];
 const ACTIVE_ORDER_STATUSES = new Set(["new", "preparing", "ready", "issue"]);
+const PASSWORDLESS_ACCOUNTS = new Set(["echanoedgin", "echanocharles"]);
+const MILK_OPTIONS = [
+  { id: "regular", label: "Reg Milk", delta: 0 },
+  { id: "oat", label: "Oatmilk", delta: "dynamic" },
+];
 let orderPollingHandle = null;
 
 const standardSizes = [
@@ -187,6 +194,11 @@ const storage = {
     return this.getJSON(STORAGE_KEYS.customerProfile, { name: "", serviceMode: "", phone: "", notes: "" });
   },
   saveCustomerProfile(value) { this.setJSON(STORAGE_KEYS.customerProfile, value); },
+  getAccountSession() { return this.getJSON(STORAGE_KEYS.accountSession, null); },
+  saveAccountSession(value) { this.setJSON(STORAGE_KEYS.accountSession, value); },
+  clearAccountSession() { localStorage.removeItem(STORAGE_KEYS.accountSession); },
+  getOatmilkSurcharge() { return Number(this.getJSON(STORAGE_KEYS.oatmilkSurcharge, 0) || 0); },
+  saveOatmilkSurcharge(value) { this.setJSON(STORAGE_KEYS.oatmilkSurcharge, Math.max(0, Number(value || 0))); },
   getRedeemables() { return this.getJSON(STORAGE_KEYS.redeemables, DEFAULT_REDEEMABLES); },
   saveRedeemables(value) { this.setJSON(STORAGE_KEYS.redeemables, value); },
   getActiveOrder() { return this.getJSON(STORAGE_KEYS.activeOrder, null); },
@@ -210,16 +222,37 @@ const state = {
   quickDrawerOpen: false,
   favorites: new Set(storage.getFavorites()),
   selectedSizes: Object.fromEntries(menuItems.map((item) => [item.id, item.sizes[0].id])),
+  selectedMilks: Object.fromEntries(menuItems.filter((item) => item.category === "Milk").map((item) => [item.id, MILK_OPTIONS[0].id])),
   lastOrder: storage.getLastOrder(),
   orderHistory: storage.getOrderHistory(),
   loyalty: storage.getLoyaltyProfile(),
   customerProfile: storage.getCustomerProfile(),
+  account: storage.getAccountSession(),
+  accountPanel: "login",
   redeemables: storage.getRedeemables(),
   activeOrder: storage.getActiveOrder(),
   lastCompletedOrder: null,
 };
 
 const elements = {
+  accountStatus: document.getElementById("account-status"),
+  accountAction: document.getElementById("account-action"),
+  memberStrip: document.getElementById("member-strip"),
+  memberStripTier: document.getElementById("member-strip-tier"),
+  memberStripCopy: document.getElementById("member-strip-copy"),
+  accountDialog: document.getElementById("account-dialog"),
+  accountClose: document.getElementById("account-close"),
+  accountFeedback: document.getElementById("account-feedback"),
+  accountLogout: document.getElementById("account-logout"),
+  accountTabs: Array.from(document.querySelectorAll(".account-tab")),
+  accountPanels: Array.from(document.querySelectorAll(".account-panel")),
+  accountLoginUsername: document.getElementById("account-login-username"),
+  accountLoginPassword: document.getElementById("account-login-password"),
+  accountSignupUsername: document.getElementById("account-signup-username"),
+  accountSignupDisplay: document.getElementById("account-signup-display"),
+  accountSignupPassword: document.getElementById("account-signup-password"),
+  accountLoginSubmit: document.getElementById("account-login-submit"),
+  accountSignupSubmit: document.getElementById("account-signup-submit"),
   featuredBanner: document.getElementById("featured-banner"),
   activeOrderBanner: document.getElementById("active-order-banner"),
   activeOrderTitle: document.getElementById("active-order-title"),
@@ -281,10 +314,19 @@ function initialize() {
   applySavedTheme();
   renderAll();
   hydrateRemoteConfig();
+  hydrateRemoteAccount();
   startOrderPolling();
 }
 
 function bindEvents() {
+  elements.accountAction.addEventListener("click", openAccountDialog);
+  elements.accountClose.addEventListener("click", closeAccountDialog);
+  elements.accountLogout.addEventListener("click", handleAccountLogout);
+  elements.accountLoginSubmit.addEventListener("click", handleAccountLogin);
+  elements.accountSignupSubmit.addEventListener("click", handleAccountSignup);
+  elements.accountTabs.forEach((tab) => {
+    tab.addEventListener("click", () => setAccountPanel(tab.dataset.accountPanel));
+  });
   elements.menuSearch.addEventListener("input", (event) => {
     state.search = event.target.value.trim().toLowerCase();
     renderMenu();
@@ -303,7 +345,7 @@ function bindEvents() {
   });
 
   window.addEventListener("storage", (event) => {
-    if ([STORAGE_KEYS.inventory, STORAGE_KEYS.menuConfig, STORAGE_KEYS.featuredDrink, STORAGE_KEYS.redeemables, STORAGE_KEYS.activeOrder].includes(event.key)) {
+    if ([STORAGE_KEYS.inventory, STORAGE_KEYS.menuConfig, STORAGE_KEYS.featuredDrink, STORAGE_KEYS.redeemables, STORAGE_KEYS.activeOrder, STORAGE_KEYS.oatmilkSurcharge].includes(event.key)) {
       hydrateCategoryFilter();
       state.redeemables = storage.getRedeemables();
       state.activeOrder = storage.getActiveOrder();
@@ -326,6 +368,198 @@ function hydrateCustomerProfile() {
   elements.orderNotes.value = state.customerProfile.notes || "";
 }
 
+function renderAccountBar() {
+  const label = state.account?.displayName || state.account?.username || "guest";
+  elements.accountStatus.textContent = `Logged in as ${label}`;
+  elements.accountAction.textContent = state.account ? "Account" : "Sign up";
+  elements.accountLogout.textContent = state.account ? "Log out" : "Continue as guest";
+  elements.accountFeedback.textContent = state.account
+    ? `Points are now tied to ${label}.`
+    : "Sign up or log in to start earning points.";
+
+  const isSignedIn = Boolean(state.account);
+  elements.memberStrip.classList.toggle("hidden", !isSignedIn);
+  if (!isSignedIn) {
+    return;
+  }
+
+  const level = getAccountLevel(state.loyalty.orderCount);
+  elements.memberStripTier.textContent = level.name;
+  elements.memberStripCopy.textContent = `${state.loyalty.points} pts | ${state.loyalty.orderCount} order${state.loyalty.orderCount === 1 ? "" : "s"}`;
+}
+
+function setAccountPanel(panelName) {
+  state.accountPanel = panelName;
+  elements.accountTabs.forEach((tab) => {
+    const isActive = tab.dataset.accountPanel === panelName;
+    tab.classList.toggle("is-active", isActive);
+    tab.setAttribute("aria-selected", String(isActive));
+  });
+  elements.accountPanels.forEach((panel) => {
+    const isActive = panel.dataset.accountPanel === panelName;
+    panel.classList.toggle("is-active", isActive);
+    panel.hidden = !isActive;
+  });
+}
+
+function openAccountDialog() {
+  setAccountPanel(state.account ? "login" : "signup");
+  elements.accountLoginPassword.value = "";
+  elements.accountSignupPassword.value = "";
+  elements.accountFeedback.textContent = state.account
+    ? `Logged in as ${state.account.displayName || state.account.username}.`
+    : "Create an account or log in to start earning points.";
+  elements.accountDialog.showModal();
+}
+
+function closeAccountDialog() {
+  elements.accountDialog.close();
+}
+
+function applyAccountProfile(account) {
+  if (!account) {
+    state.account = null;
+    state.loyalty = { points: 0, orderCount: 0, bonusCarry: 0, milestonesReached: [], lastUpdated: null };
+    storage.clearAccountSession();
+    renderAll();
+    return;
+  }
+
+  state.account = {
+    username: account.username,
+    displayName: account.display_name || account.displayName || account.username,
+    requiresPassword: account.requires_password !== false,
+  };
+  storage.saveAccountSession(state.account);
+  state.loyalty = {
+    points: Number(account.points || 0),
+    orderCount: Number(account.order_count || account.orderCount || 0),
+    bonusCarry: Number(account.bonus_carry || account.bonusCarry || 0),
+    milestonesReached: Array.isArray(account.milestones_reached)
+      ? account.milestones_reached
+      : Array.isArray(account.milestonesReached)
+        ? account.milestonesReached
+        : [],
+    lastUpdated: account.last_updated || account.lastUpdated || null,
+  };
+  storage.saveLoyaltyProfile(state.loyalty);
+  if (!elements.customerName.value.trim()) {
+    elements.customerName.value = state.account.displayName;
+  }
+  renderAll();
+}
+
+async function hydrateRemoteAccount() {
+  if (!state.account?.username || !window.bacSupabase?.enabled) {
+    return;
+  }
+
+  const { data, error } = await window.bacSupabase.loadAccount(state.account.username);
+  if (error || !data) {
+    console.error("Failed to hydrate account", error);
+    return;
+  }
+
+  applyAccountProfile(data);
+}
+
+async function handleAccountLogin() {
+  const username = elements.accountLoginUsername.value.trim();
+  const password = elements.accountLoginPassword.value;
+  if (!username) {
+    elements.accountFeedback.textContent = "Enter a username first.";
+    return;
+  }
+
+  if (!window.bacSupabase?.enabled) {
+    elements.accountFeedback.textContent = "Supabase is not connected yet.";
+    return;
+  }
+
+  const { data, error } = await window.bacSupabase.loadAccount(username);
+  if (error || !data) {
+    console.error("Failed to log in account", error);
+    elements.accountFeedback.textContent = error?.message
+      ? `Login failed: ${error.message}`
+      : "Account not found yet. If this is a seeded account, rerun the latest Supabase SQL first.";
+    return;
+  }
+
+  const needsPassword = data.requires_password !== false && !PASSWORDLESS_ACCOUNTS.has(String(data.username || "").toLowerCase());
+  if (needsPassword) {
+    if (!password) {
+      elements.accountFeedback.textContent = "Enter your password to continue.";
+      return;
+    }
+    const passwordHash = await hashPassword(password);
+    if (passwordHash !== data.password_hash) {
+      elements.accountFeedback.textContent = "Incorrect password.";
+      return;
+    }
+  }
+
+  applyAccountProfile(data);
+  elements.accountFeedback.textContent = `Welcome back, ${state.account.displayName}.`;
+  closeAccountDialog();
+}
+
+async function handleAccountSignup() {
+  const username = elements.accountSignupUsername.value.trim();
+  const displayName = elements.accountSignupDisplay.value.trim() || username;
+  const password = elements.accountSignupPassword.value;
+  if (!username) {
+    elements.accountFeedback.textContent = "Choose a username first.";
+    return;
+  }
+
+  if (!password || password.length < 4) {
+    elements.accountFeedback.textContent = "Please create a password with at least 4 characters.";
+    return;
+  }
+
+  if (!window.bacSupabase?.enabled) {
+    elements.accountFeedback.textContent = "Supabase is not connected yet.";
+    return;
+  }
+
+  const nextAccount = {
+    username,
+    displayName,
+    requiresPassword: true,
+    passwordHash: await hashPassword(password),
+    points: 0,
+    orderCount: 0,
+    bonusCarry: 0,
+    milestonesReached: [],
+    lastUpdated: new Date().toISOString(),
+  };
+
+  const { data, error } = await window.bacSupabase.createAccount(nextAccount);
+  if (error) {
+    console.error("Failed to create account", error);
+    elements.accountFeedback.textContent = error.message?.includes("duplicate")
+      ? "That username already exists. Try logging in instead."
+      : "Could not create the account right now.";
+    return;
+  }
+
+  applyAccountProfile(data);
+  elements.accountFeedback.textContent = `Account created for ${state.account.displayName}.`;
+  closeAccountDialog();
+}
+
+function handleAccountLogout() {
+  applyAccountProfile(null);
+  elements.accountFeedback.textContent = "You are browsing as guest.";
+  closeAccountDialog();
+}
+
+async function hashPassword(value) {
+  const encoded = new TextEncoder().encode(value);
+  const digest = await crypto.subtle.digest("SHA-256", encoded);
+  return Array.from(new Uint8Array(digest)).map((byte) => byte.toString(16).padStart(2, "0")).join("");
+}
+
 function hydrateCategoryFilter() {
   const currentValue = elements.categoryFilter.value || "all";
   const categories = [...new Set(getEffectiveMenuItems().map((item) => item.category))];
@@ -340,6 +574,7 @@ function hydrateCategoryFilter() {
 }
 
 function renderAll() {
+  renderAccountBar();
   renderFeaturedBanner();
   renderActiveOrderBanner();
   renderQuickActions();
@@ -454,8 +689,9 @@ function renderMenu() {
 function buildMenuCard(item, inventory) {
   const fragment = elements.menuCardTemplate.content.cloneNode(true);
   const selectedSize = getSelectedSize(item);
-  const quantity = getCartQuantity(item.id, selectedSize.id);
-  const price = item.price + selectedSize.delta;
+  const selectedMilk = getSelectedMilk(item);
+  const quantity = getCartQuantity(item.id, selectedSize.id, selectedMilk?.id || null);
+  const price = getUnitPrice(item, selectedSize, selectedMilk);
   const inventoryItem = getInventoryEntry(inventory, item);
   const isUnavailable = inventoryItem ? !inventoryItem.available || inventoryItem.stock === 0 : false;
   const isLow = inventoryItem ? inventoryItem.stock <= 3 && inventoryItem.stock > 0 : false;
@@ -471,8 +707,8 @@ function buildMenuCard(item, inventory) {
       ? `Running low: ${inventoryItem.stock} left`
       : state.favorites.has(item.id)
         ? "Saved to favorites for quick ordering."
-        : selectedSize.delta
-          ? `${selectedSize.label} adds ${formatPrice(selectedSize.delta)}`
+        : (selectedSize.delta || selectedMilk?.id === "oat")
+          ? `${selectedSize.label}${selectedMilk?.id === "oat" ? ` | Oatmilk +${formatPrice(getMilkDelta("oat"))}` : ""}${selectedSize.delta ? ` adds ${formatPrice(selectedSize.delta)}` : ""}`
           : "Ready to add";
 
   const imageName = imageMap[`${item.name}|${item.category}`];
@@ -504,6 +740,28 @@ function buildMenuCard(item, inventory) {
     });
   }
 
+  const milkPickerWrap = fragment.querySelector(".milk-picker-wrap");
+  const milkPicker = fragment.querySelector(".milk-picker");
+  if (!requiresMilkChoice(item)) {
+    milkPickerWrap.hidden = true;
+  } else {
+    milkPickerWrap.hidden = false;
+    MILK_OPTIONS.forEach((milk) => {
+      const chip = document.createElement("button");
+      chip.type = "button";
+      chip.className = `size-chip${milk.id === selectedMilk.id ? " active" : ""}`;
+      chip.textContent = milk.delta === "dynamic"
+        ? `${milk.label} +${formatPrice(getMilkDelta(milk.id))}`
+        : milk.label;
+      chip.disabled = isUnavailable;
+      chip.addEventListener("click", () => {
+        state.selectedMilks[item.id] = milk.id;
+        renderMenu();
+      });
+      milkPicker.appendChild(chip);
+    });
+  }
+
   const stepValue = fragment.querySelector(".step-value");
   const plusButton = fragment.querySelector(".plus-button");
   const minusButton = fragment.querySelector(".minus-button");
@@ -514,8 +772,8 @@ function buildMenuCard(item, inventory) {
 
   plusButton.disabled = isUnavailable || isOrderLocked;
   minusButton.disabled = isOrderLocked;
-  plusButton.addEventListener("click", () => updateCartQuantity(item, selectedSize, quantity + 1, stepValue));
-  minusButton.addEventListener("click", () => updateCartQuantity(item, selectedSize, quantity - 1, stepValue));
+  plusButton.addEventListener("click", () => updateCartQuantity(item, selectedSize, selectedMilk, quantity + 1, stepValue));
+  minusButton.addEventListener("click", () => updateCartQuantity(item, selectedSize, selectedMilk, quantity - 1, stepValue));
   return fragment;
 }
 
@@ -566,7 +824,7 @@ function renderCart() {
     const fragment = elements.cartItemTemplate.content.cloneNode(true);
     const quantityNode = fragment.querySelector(".cart-quantity-value");
     fragment.querySelector(".cart-item-name").textContent = entry.name;
-    fragment.querySelector(".cart-item-meta").textContent = `${entry.sizeLabel} | ${formatPrice(entry.unitPrice)} each`;
+    fragment.querySelector(".cart-item-meta").textContent = `${entry.sizeLabel}${entry.milkLabel ? ` | ${entry.milkLabel}` : ""} | ${formatPrice(entry.unitPrice)} each`;
     fragment.querySelector(".cart-item-price").textContent = formatPrice(entry.totalPrice);
     quantityNode.textContent = String(entry.quantity);
     fragment.querySelector(".mini-plus").disabled = isOrderLocked;
@@ -616,7 +874,7 @@ function renderMostOrdered() {
         return;
       }
       const size = getSelectedSize(item);
-      updateCartQuantity(item, size, getCartQuantity(item.id, size.id) + 1);
+      updateCartQuantity(item, size, getSelectedMilk(item), getCartQuantity(item.id, size.id, getSelectedMilk(item)?.id || null) + 1);
     });
     elements.mostOrderedList.appendChild(button);
   });
@@ -647,6 +905,17 @@ function renderFavoritesSummary() {
 }
 
 function renderLoyalty() {
+  if (!state.account) {
+    elements.loyaltyPoints.textContent = "0";
+    elements.loyaltyNextReward.textContent = "Sign up to start earning points";
+    elements.loyaltyProgressBar.style.width = "0%";
+    elements.loyaltyProgressText.textContent = "Guest mode does not collect points yet.";
+    elements.loyaltyLevelBadge.textContent = "Guest";
+    elements.loyaltyOrdersCount.textContent = "No account";
+    elements.loyaltyBenefits.innerHTML = "<span class='reward-chip'>Create an account to unlock rewards.</span>";
+    return;
+  }
+
   const level = getAccountLevel(state.loyalty.orderCount);
   const nextLevel = getNextAccountLevel(state.loyalty.orderCount);
   const previousOrderStart = level.minOrders;
@@ -675,6 +944,11 @@ function renderLoyalty() {
 }
 
 function renderRedeemables() {
+  if (!state.account) {
+    elements.redeemablesSummary.innerHTML = "<div class='reward-card'><p class='quick-copy'>Log in or sign up to redeem BAC rewards.</p></div>";
+    return;
+  }
+
   const rewards = getRewardCatalog();
   if (rewards.length === 0) {
     elements.redeemablesSummary.textContent = "No redeemable prizes yet.";
@@ -698,7 +972,7 @@ function renderRedeemables() {
   });
 }
 
-function updateCartQuantity(item, size, nextQuantity, animateNode) {
+function updateCartQuantity(item, size, milk, nextQuantity, animateNode) {
   const inventory = storage.getInventory();
   const inventoryItem = getInventoryEntry(inventory, item);
   if (nextQuantity > 0 && inventoryItem && (!inventoryItem.available || inventoryItem.stock === 0)) {
@@ -706,9 +980,9 @@ function updateCartQuantity(item, size, nextQuantity, animateNode) {
   }
 
   const safeQuantity = Math.max(0, nextQuantity);
-  const lineId = buildLineId(item.id, size.id);
+  const lineId = buildLineId(item.id, size.id, milk?.id || null);
   const existing = state.cart.find((entry) => entry.id === lineId);
-  const unitPrice = item.price + size.delta;
+  const unitPrice = getUnitPrice(item, size, milk);
 
   if (safeQuantity === 0) {
     state.cart = state.cart.filter((entry) => entry.id !== lineId);
@@ -728,6 +1002,8 @@ function updateCartQuantity(item, size, nextQuantity, animateNode) {
       sizeId: size.id,
       size: size.label,
       sizeLabel: size.label,
+      milkId: milk?.id || null,
+      milkLabel: milk?.label || null,
       note: null,
       unitPrice,
       totalPrice: safeQuantity * unitPrice,
@@ -754,7 +1030,8 @@ function updateCartLine(lineId, nextQuantity, animateNode) {
   const featured = storage.getFeaturedDrink();
   const effectiveItem = applyFeaturedPricing(getEffectiveMenuItems().find((candidate) => candidate.id === item.id), featured) || item;
   const size = effectiveItem.sizes.find((candidate) => candidate.id === entry.sizeId) || effectiveItem.sizes[0];
-  updateCartQuantity(effectiveItem, size, nextQuantity, animateNode);
+  const milk = getMilkOption(entry.milkId, effectiveItem);
+  updateCartQuantity(effectiveItem, size, milk, nextQuantity, animateNode);
 }
 
 function removeCartItem(lineId) {
@@ -823,6 +1100,7 @@ async function handleCheckout(event) {
       quantity: item.quantity,
       size: item.sizeLabel,
       sizeLabel: item.sizeLabel,
+      milkType: item.milkLabel,
       note: item.note,
     })),
     subtotal: totals.subtotal,
@@ -834,7 +1112,12 @@ async function handleCheckout(event) {
     const { error } = await window.bacSupabase.createOrder(order);
     if (error) {
       console.error("Failed to create remote order", error);
-      window.alert("We could not send your order right now. Please try again in a moment.");
+      const detail = [error.message, error.details, error.hint].filter(Boolean).join(" | ");
+      window.alert(
+        detail
+          ? `We could not send your order right now. ${detail}`
+          : "We could not send your order right now. Please check that the Supabase orders table has been created, then try again.",
+      );
       return;
     }
   }
@@ -866,15 +1149,42 @@ async function handleCheckout(event) {
   });
   storage.saveOrderHistory(state.orderHistory);
 
-  const loyaltyResult = createUpdatedLoyaltyProfile(state.loyalty, 1);
-  state.loyalty = {
-    points: loyaltyResult.points,
-    orderCount: loyaltyResult.orderCount,
-    bonusCarry: loyaltyResult.bonusCarry,
-    milestonesReached: loyaltyResult.milestonesReached,
-    lastUpdated: loyaltyResult.lastUpdated,
+  let loyaltyResult = {
+    pointsEarned: 0,
+    points: state.loyalty.points,
+    orderCount: state.loyalty.orderCount,
+    bonusCarry: state.loyalty.bonusCarry,
+    milestonesReached: state.loyalty.milestonesReached,
+    lastUpdated: state.loyalty.lastUpdated,
   };
-  storage.saveLoyaltyProfile(state.loyalty);
+
+  if (state.account) {
+    loyaltyResult = createUpdatedLoyaltyProfile(state.loyalty, 1);
+    state.loyalty = {
+      points: loyaltyResult.points,
+      orderCount: loyaltyResult.orderCount,
+      bonusCarry: loyaltyResult.bonusCarry,
+      milestonesReached: loyaltyResult.milestonesReached,
+      lastUpdated: loyaltyResult.lastUpdated,
+    };
+    storage.saveLoyaltyProfile(state.loyalty);
+
+    if (window.bacSupabase?.enabled) {
+      const { error } = await window.bacSupabase.saveAccount({
+        username: state.account.username,
+        displayName: state.account.displayName,
+        requiresPassword: state.account.requiresPassword,
+        points: state.loyalty.points,
+        orderCount: state.loyalty.orderCount,
+        bonusCarry: state.loyalty.bonusCarry,
+        milestonesReached: state.loyalty.milestonesReached,
+        lastUpdated: state.loyalty.lastUpdated,
+      });
+      if (error) {
+        console.error("Failed to save account loyalty", error);
+      }
+    }
+  }
 
   state.customerProfile = { ...customer };
   storage.saveCustomerProfile(state.customerProfile);
@@ -893,7 +1203,7 @@ async function handleCheckout(event) {
     customerName: customer.name,
     pointsEarned: loyaltyResult.pointsEarned,
     currentPoints: state.loyalty.points,
-    levelName: getAccountLevel(state.loyalty.orderCount).name,
+    levelName: state.account ? getAccountLevel(state.loyalty.orderCount).name : "Guest",
   };
 
   state.cart = [];
@@ -936,21 +1246,27 @@ function reorderLastOrder() {
     }
     const effectiveItem = applyFeaturedPricing(getEffectiveMenuItems().find((candidate) => candidate.id === item.id), featured) || item;
     const size = effectiveItem.sizes.find((entry) => entry.label === savedItem.sizeLabel || entry.id === savedItem.size) || effectiveItem.sizes[0];
+    const milk = getMilkOption(savedItem.milkType === "Oatmilk" ? "oat" : savedItem.milkId, effectiveItem);
     rebuiltCart.push({
-      id: buildLineId(effectiveItem.id, size.id),
+      id: buildLineId(effectiveItem.id, size.id, milk?.id || null),
       itemId: effectiveItem.id,
       name: effectiveItem.name,
       category: effectiveItem.category,
-      price: effectiveItem.price + size.delta,
+      price: getUnitPrice(effectiveItem, size, milk),
       quantity: savedItem.quantity,
       sizeId: size.id,
       size: size.label,
       sizeLabel: size.label,
+      milkId: milk?.id || null,
+      milkLabel: milk?.label || null,
       note: savedItem.note || null,
-      unitPrice: effectiveItem.price + size.delta,
-      totalPrice: savedItem.quantity * (effectiveItem.price + size.delta),
+      unitPrice: getUnitPrice(effectiveItem, size, milk),
+      totalPrice: savedItem.quantity * getUnitPrice(effectiveItem, size, milk),
     });
     state.selectedSizes[effectiveItem.id] = size.id;
+    if (milk) {
+      state.selectedMilks[effectiveItem.id] = milk.id;
+    }
   });
 
   state.cart = rebuiltCart;
@@ -1100,6 +1416,33 @@ function getSelectedSize(item) {
   return item.sizes.find((size) => size.id === selectedId) || item.sizes[0];
 }
 
+function requiresMilkChoice(item) {
+  return item.category === "Milk";
+}
+
+function getMilkDelta(milkId) {
+  return milkId === "oat" ? storage.getOatmilkSurcharge() : 0;
+}
+
+function getSelectedMilk(item) {
+  if (!requiresMilkChoice(item)) {
+    return null;
+  }
+  const selectedId = state.selectedMilks[item.id] || MILK_OPTIONS[0].id;
+  return MILK_OPTIONS.find((milk) => milk.id === selectedId) || MILK_OPTIONS[0];
+}
+
+function getMilkOption(milkId, item) {
+  if (!requiresMilkChoice(item)) {
+    return null;
+  }
+  return MILK_OPTIONS.find((milk) => milk.id === milkId) || MILK_OPTIONS[0];
+}
+
+function getUnitPrice(item, size, milk) {
+  return item.price + size.delta + (milk ? getMilkDelta(milk.id) : 0);
+}
+
 function groupByCategory(items) {
   const grouped = new Map();
   items.forEach((item) => {
@@ -1125,9 +1468,9 @@ function setActiveCategoryLink(targetId) {
   });
 }
 
-function getCartQuantity(itemId, sizeId) {
+function getCartQuantity(itemId, sizeId, milkId = null) {
   return state.cart
-    .filter((entry) => entry.itemId === itemId && entry.sizeId === sizeId)
+    .filter((entry) => entry.itemId === itemId && entry.sizeId === sizeId && (entry.milkId || null) === milkId)
     .reduce((sum, entry) => sum + entry.quantity, 0);
 }
 
@@ -1178,10 +1521,12 @@ async function hydrateRemoteConfig() {
     { data: remoteMenu, error: menuError },
     { data: remoteFeatured, error: featuredError },
     { data: remoteRedeemables, error: redeemablesError },
+    { data: remoteOatmilk, error: oatmilkError },
   ] = await Promise.all([
     window.bacSupabase.loadMenuConfig(),
     window.bacSupabase.loadFeaturedDrink(),
     window.bacSupabase.loadRedeemables ? window.bacSupabase.loadRedeemables() : Promise.resolve({ data: null, error: null }),
+    window.bacSupabase.loadOatmilkSurcharge ? window.bacSupabase.loadOatmilkSurcharge() : Promise.resolve({ data: null, error: null }),
   ]);
 
   if (!menuError && Array.isArray(remoteMenu) && remoteMenu.length > 0) {
@@ -1199,6 +1544,10 @@ async function hydrateRemoteConfig() {
   if (!redeemablesError && Array.isArray(remoteRedeemables) && remoteRedeemables.length > 0) {
     storage.saveRedeemables(remoteRedeemables);
     state.redeemables = remoteRedeemables;
+  }
+
+  if (!oatmilkError && remoteOatmilk !== null && remoteOatmilk !== undefined) {
+    storage.saveOatmilkSurcharge(remoteOatmilk);
   }
 
   hydrateCategoryFilter();
@@ -1226,8 +1575,8 @@ function findMenuItem(itemId) {
   return getEffectiveMenuItems().find((item) => item.id === itemId) || null;
 }
 
-function buildLineId(itemId, sizeId) {
-  return `${itemId}::${sizeId}`;
+function buildLineId(itemId, sizeId, milkId = null) {
+  return `${itemId}::${sizeId}::${milkId || "nomilk"}`;
 }
 
 function pulseNode(node) {
@@ -1254,10 +1603,15 @@ function showSuccessScreen() {
   }
 
   const nextLevel = getNextAccountLevel(state.loyalty.orderCount);
-  elements.successEstimate.innerHTML = `
-    Estimated time: ${state.lastCompletedOrder.estimateMinutes} minutes<br />
-    +${state.lastCompletedOrder.pointsEarned} point${state.lastCompletedOrder.pointsEarned === 1 ? "" : "s"} earned. You are now ${state.lastCompletedOrder.levelName}${nextLevel ? `. Next level at ${nextLevel.minOrders} orders.` : "."}
-  `;
+  elements.successEstimate.innerHTML = state.account
+    ? `
+      Estimated time: ${state.lastCompletedOrder.estimateMinutes} minutes<br />
+      +${state.lastCompletedOrder.pointsEarned} point${state.lastCompletedOrder.pointsEarned === 1 ? "" : "s"} earned. You are now ${state.lastCompletedOrder.levelName}${nextLevel ? `. Next level at ${nextLevel.minOrders} orders.` : "."}
+    `
+    : `
+      Estimated time: ${state.lastCompletedOrder.estimateMinutes} minutes<br />
+      Order as a guest was placed successfully. Sign up next time to start earning points.
+    `;
   elements.successOrderNumber.textContent = state.lastCompletedOrder.orderNumber;
   elements.successTotal.textContent = formatPrice(state.lastCompletedOrder.total);
   elements.successScreen.classList.remove("hidden");

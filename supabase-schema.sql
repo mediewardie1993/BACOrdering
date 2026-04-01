@@ -30,6 +30,21 @@ create table if not exists public.orders (
   updated_at timestamptz not null default now()
 );
 
+create table if not exists public.loyalty_accounts (
+  username text primary key,
+  display_name text not null,
+  requires_password boolean not null default true,
+  password_hash text,
+  points integer not null default 0 check (points >= 0),
+  order_count integer not null default 0 check (order_count >= 0),
+  bonus_carry numeric not null default 0,
+  milestones_reached jsonb not null default '[]'::jsonb,
+  last_updated timestamptz not null default now()
+);
+
+alter table public.loyalty_accounts add column if not exists requires_password boolean not null default true;
+alter table public.loyalty_accounts add column if not exists password_hash text;
+
 create or replace function public.set_updated_at()
 returns trigger
 language plpgsql
@@ -97,6 +112,7 @@ set
 alter table public.menu_items enable row level security;
 alter table public.app_settings enable row level security;
 alter table public.orders enable row level security;
+alter table public.loyalty_accounts enable row level security;
 
 drop policy if exists "public can read menu items" on public.menu_items;
 create policy "public can read menu items"
@@ -111,6 +127,11 @@ using (true);
 drop policy if exists "public can read orders" on public.orders;
 create policy "public can read orders"
 on public.orders for select
+using (true);
+
+drop policy if exists "public can read loyalty accounts" on public.loyalty_accounts;
+create policy "public can read loyalty accounts"
+on public.loyalty_accounts for select
 using (true);
 
 drop policy if exists "public can write menu items" on public.menu_items;
@@ -130,3 +151,24 @@ create policy "public can write orders"
 on public.orders for all
 using (true)
 with check (true);
+
+drop policy if exists "public can write loyalty accounts" on public.loyalty_accounts;
+create policy "public can write loyalty accounts"
+on public.loyalty_accounts for all
+using (true)
+with check (true);
+
+insert into public.loyalty_accounts (username, display_name, requires_password, password_hash, points, order_count, bonus_carry, milestones_reached, last_updated)
+values
+  ('EchanoEdgin', 'EchanoEdgin', false, null, 80, 55, 0, '[5,10,15,20]'::jsonb, now()),
+  ('EchanoCharles', 'EchanoCharles', false, null, 80, 55, 0, '[5,10,15,20]'::jsonb, now())
+on conflict (username) do update
+set
+  display_name = excluded.display_name,
+  requires_password = excluded.requires_password,
+  password_hash = excluded.password_hash,
+  points = excluded.points,
+  order_count = excluded.order_count,
+  bonus_carry = excluded.bonus_carry,
+  milestones_reached = excluded.milestones_reached,
+  last_updated = excluded.last_updated;

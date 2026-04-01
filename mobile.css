@@ -133,6 +133,60 @@ button {
   padding: 14px 14px 92px;
 }
 
+.account-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 10px;
+  padding: 4px 4px 0;
+}
+
+.account-status {
+  margin: 0;
+  font-size: 0.82rem;
+  color: var(--muted);
+}
+
+.account-button {
+  padding: 10px 14px;
+  border-radius: 999px;
+  background: var(--surface-strong);
+  border: 1px solid var(--line);
+  color: var(--accent-deep);
+}
+
+.member-strip {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin: 0 4px 12px;
+  padding: 10px 12px;
+  border-radius: 16px;
+  background: var(--surface-strong);
+  border: 1px solid var(--line);
+}
+
+.member-strip-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 6px 10px;
+  border-radius: 999px;
+  background: var(--accent-soft);
+  color: var(--accent-deep);
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.member-strip-copy {
+  color: var(--muted);
+  font-size: 0.84rem;
+}
+
 .card,
 .mobile-hero,
 .featured,
@@ -385,6 +439,20 @@ body.dark-mode .theme-toggle {
   background: color-mix(in srgb, var(--accent) 18%, white 82%);
 }
 
+body.dark-mode .reward-chip,
+body[data-theme="charcoal"] .reward-chip {
+  background: var(--surface-strong);
+  color: var(--ink);
+  border-color: var(--line);
+}
+
+body.dark-mode .reward-chip.is-earned,
+body[data-theme="charcoal"] .reward-chip.is-earned {
+  background: color-mix(in srgb, var(--accent-soft) 78%, var(--surface-strong) 22%);
+  color: var(--ink);
+  border-color: color-mix(in srgb, var(--accent) 45%, var(--line) 55%);
+}
+
 .reward-card {
   display: grid;
   gap: 6px;
@@ -396,7 +464,7 @@ body.dark-mode .theme-toggle {
 
 .reward-card.is-available {
   border-color: var(--accent);
-  background: color-mix(in srgb, var(--accent) 10%, white 90%);
+  background: color-mix(in srgb, var(--accent-soft) 55%, var(--surface-strong) 45%);
 }
 
 .reward-card-top {
@@ -421,6 +489,27 @@ body.dark-mode .theme-toggle {
 .reward-status {
   color: var(--muted);
   font-size: 0.9rem;
+}
+
+body.dark-mode .reward-card,
+body[data-theme="charcoal"] .reward-card {
+  background: var(--surface-strong);
+  border-color: var(--line);
+}
+
+body.dark-mode .reward-card.is-available,
+body[data-theme="charcoal"] .reward-card.is-available {
+  background: color-mix(in srgb, var(--accent-soft) 75%, var(--surface-strong) 25%);
+  border-color: color-mix(in srgb, var(--accent) 55%, var(--line) 45%);
+}
+
+body.dark-mode .reward-card strong,
+body.dark-mode .reward-card p,
+body.dark-mode .reward-card .reward-status,
+body[data-theme="charcoal"] .reward-card strong,
+body[data-theme="charcoal"] .reward-card p,
+body[data-theme="charcoal"] .reward-card .reward-status {
+  color: var(--ink);
 }
 
 .loyalty-stats {
@@ -866,6 +955,61 @@ body.dark-mode .drink-image {
   align-items: end;
   padding: 16px;
   background: var(--overlay);
+}
+
+.account-dialog {
+  width: min(100%, 420px);
+  border: 0;
+  padding: 0;
+  background: transparent;
+}
+
+.account-dialog::backdrop {
+  background: var(--overlay);
+}
+
+.account-sheet {
+  display: grid;
+  gap: 14px;
+  padding: 18px;
+  border-radius: 28px;
+  background: var(--surface-tint);
+  border: 1px solid var(--line);
+  box-shadow: var(--shadow);
+}
+
+.account-tabs {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.account-tab {
+  padding: 12px 14px;
+  border-radius: 14px;
+  border: 1px solid var(--line);
+  background: var(--surface-strong);
+  color: var(--muted);
+}
+
+.account-tab.is-active {
+  background: var(--accent);
+  color: #fff8f4;
+  border-color: var(--accent);
+}
+
+.account-panel {
+  display: grid;
+  gap: 12px;
+}
+
+.account-panel[hidden] {
+  display: none;
+}
+
+.account-footer {
+  display: grid;
+  gap: 10px;
 }
 
 .success-card {

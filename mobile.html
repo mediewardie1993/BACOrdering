@@ -8,6 +8,15 @@
   </head>
   <body>
     <div class="mobile-shell">
+      <section class="account-bar">
+        <p id="account-status" class="account-status">Logged in as guest</p>
+        <button id="account-action" class="account-button" type="button">Sign up</button>
+      </section>
+      <section id="member-strip" class="member-strip hidden" aria-live="polite">
+        <span id="member-strip-tier" class="member-strip-badge">Platinum</span>
+        <span id="member-strip-copy" class="member-strip-copy">80 pts</span>
+      </section>
+
       <header class="mobile-hero">
         <img class="hero-logo" src="./bac - logo.png" alt="BAC" />
         <p class="hero-copy brand-copy">BEGIN AGAIN CAFE</p>
@@ -195,6 +204,58 @@
           </div>
         </div>
       </section>
+
+      <dialog id="account-dialog" class="account-dialog">
+        <div class="account-sheet">
+          <header class="sheet-header">
+            <div>
+              <p class="eyebrow">Account</p>
+              <h2>Start earning points</h2>
+            </div>
+            <button id="account-close" class="close-button" type="button">&times;</button>
+          </header>
+
+          <div class="account-tabs" role="tablist" aria-label="Account access">
+            <button id="account-tab-login" class="account-tab is-active" type="button" data-account-panel="login" aria-selected="true">Log in</button>
+            <button id="account-tab-signup" class="account-tab" type="button" data-account-panel="signup" aria-selected="false">Sign up</button>
+          </div>
+
+          <section id="account-panel-login" class="account-panel is-active" data-account-panel="login">
+            <p class="quick-copy">Use your username to load your BAC rewards profile.</p>
+            <label>
+              Username
+              <input id="account-login-username" type="text" placeholder="Enter username here" />
+            </label>
+            <label>
+              Password
+              <input id="account-login-password" type="password" placeholder="Enter password here" />
+            </label>
+            <button id="account-login-submit" class="primary-button" type="button">Log in</button>
+          </section>
+
+          <section id="account-panel-signup" class="account-panel" data-account-panel="signup" hidden>
+            <p class="quick-copy">Create a simple BAC account and start earning points on every completed order.</p>
+            <label>
+              Username
+              <input id="account-signup-username" type="text" placeholder="Enter username here" />
+            </label>
+            <label>
+              Display name
+              <input id="account-signup-display" type="text" placeholder="Your name" />
+            </label>
+            <label>
+              Password
+              <input id="account-signup-password" type="password" placeholder="Create a password" />
+            </label>
+            <button id="account-signup-submit" class="primary-button" type="button">Create account</button>
+          </section>
+
+          <div class="account-footer">
+            <button id="account-logout" class="toolbar-button" type="button">Continue as guest</button>
+            <p id="account-feedback" class="quick-copy"></p>
+          </div>
+        </div>
+      </dialog>
     </div>
 
     <template id="menu-card-template">
@@ -214,6 +275,10 @@
         <div class="size-picker-wrap">
           <p class="size-label">Size</p>
           <div class="size-picker"></div>
+        </div>
+        <div class="milk-picker-wrap" hidden>
+          <p class="size-label">Milk</p>
+          <div class="milk-picker"></div>
         </div>
         <div class="stepper">
           <button class="step-button minus-button" type="button">-</button>
