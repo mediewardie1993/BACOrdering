@@ -114,6 +114,13 @@
           <button id="mark-item-unavailable" class="danger-button" type="button">Mark Unavailable</button>
           <p id="inventory-selection" class="inventory-selection">No item selected</p>
         </div>
+        <label class="panel-field">
+          <span>Category</span>
+          <select id="inventory-category-filter">
+            <option value="hidden">Category</option>
+            <option value="all">Show all</option>
+          </select>
+        </label>
         <div id="inventory-list" class="inventory-list"></div>
       </section>
 
@@ -147,6 +154,7 @@
             <label class="panel-field">
               <span>Category</span>
               <select id="menu-category-filter">
+                <option value="hidden">Category</option>
                 <option value="all">Show all</option>
               </select>
             </label>

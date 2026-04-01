@@ -105,7 +105,8 @@ const state = {
   featuredDrink: loadFeaturedDrink(),
   redeemables: loadRedeemables(),
   oatmilkSurcharge: loadOatmilkSurcharge(),
-  menuCategory: "all",
+  menuCategory: "hidden",
+  inventoryCategory: "hidden",
   selectedInventoryId: null,
   selectedMenuId: null,
   pendingFeaturedAsset: "",
@@ -121,6 +122,7 @@ const elements = {
   reduceStockItem: document.getElementById("reduce-stock-item"),
   markItemUnavailable: document.getElementById("mark-item-unavailable"),
   inventorySelection: document.getElementById("inventory-selection"),
+  inventoryCategoryFilter: document.getElementById("inventory-category-filter"),
   inventoryList: document.getElementById("inventory-list"),
   saveMenuPrice: document.getElementById("save-menu-price"),
   resetMenuPrice: document.getElementById("reset-menu-price"),
@@ -183,6 +185,7 @@ function bindEvents() {
   elements.restockItem.addEventListener("click", restockSelectedItem);
   elements.reduceStockItem.addEventListener("click", reduceSelectedItemStock);
   elements.markItemUnavailable.addEventListener("click", toggleSelectedUnavailable);
+  elements.inventoryCategoryFilter.addEventListener("change", handleInventoryCategoryChange);
   elements.saveMenuPrice.addEventListener("click", saveSelectedMenuPrice);
   elements.resetMenuPrice.addEventListener("click", resetSelectedMenuPrice);
   elements.menuCategoryFilter.addEventListener("change", handleMenuCategoryChange);
@@ -203,12 +206,34 @@ function render() {
 
 function renderInventory() {
   elements.inventoryList.innerHTML = "";
+  hydrateInventoryCategoryFilter();
   const selectedItem = getSelectedInventoryItem();
   elements.inventorySelection.textContent = selectedItem
     ? `Selected: ${selectedItem.name} (${selectedItem.category})`
     : "No item selected";
 
-  state.inventory.forEach((item) => {
+  const visibleItems = state.inventoryCategory === "hidden"
+    ? []
+    : state.inventoryCategory === "all"
+      ? state.inventory
+      : state.inventory.filter((item) => getCategoryDefinitionByRaw(item.category).id === state.inventoryCategory);
+
+  if (visibleItems.length === 0) {
+    const empty = document.createElement("div");
+    empty.className = "empty-state";
+    if (state.inventoryCategory === "hidden") {
+      empty.textContent = "Inventory list hidden. Choose a category to show items.";
+    } else {
+      const category = CATEGORY_DEFINITIONS.find((entry) => entry.id === state.inventoryCategory);
+      empty.textContent = category?.comingSoon
+        ? `${category.label} coming soon.`
+        : `No ${category?.label?.toLowerCase() || "inventory"} items in this category yet.`;
+    }
+    elements.inventoryList.appendChild(empty);
+    return;
+  }
+
+  visibleItems.forEach((item) => {
     const fragment = elements.inventoryRowTemplate.content.cloneNode(true);
     const row = fragment.querySelector(".inventory-row");
     const status = getInventoryStatus(item);
@@ -228,6 +253,26 @@ function renderInventory() {
   });
 }
 
+function hydrateInventoryCategoryFilter() {
+  const currentValue = CATEGORY_DEFINITIONS.some((category) => category.id === state.inventoryCategory) || ["all", "hidden"].includes(state.inventoryCategory)
+    ? state.inventoryCategory
+    : "hidden";
+  elements.inventoryCategoryFilter.innerHTML = '<option value="hidden">Category</option><option value="all">Show all</option>';
+  CATEGORY_DEFINITIONS.forEach((category) => {
+    const option = document.createElement("option");
+    option.value = category.id;
+    option.textContent = category.label;
+    elements.inventoryCategoryFilter.appendChild(option);
+  });
+  elements.inventoryCategoryFilter.value = currentValue;
+  state.inventoryCategory = currentValue;
+}
+
+function handleInventoryCategoryChange(event) {
+  state.inventoryCategory = event.target.value;
+  renderInventory();
+}
+
 function renderMenuManager() {
   elements.menuList.innerHTML = "";
   hydrateMenuCategoryFilter();
@@ -237,7 +282,9 @@ function renderMenuManager() {
     : "No menu item selected";
   elements.menuPriceInput.value = selectedItem ? String(selectedItem.price) : "";
   elements.oatmilkPriceInput.value = String(state.oatmilkSurcharge);
-  const visibleItems = state.menuCategory === "all"
+  const visibleItems = state.menuCategory === "hidden"
+    ? []
+    : state.menuCategory === "all"
     ? state.menuConfig
     : state.menuConfig.filter((item) => getCategoryDefinitionByRaw(item.category).id === state.menuCategory);
   const groupedItems = groupMenuConfigByCategory(visibleItems);
@@ -267,20 +314,26 @@ function renderMenuManager() {
     });
   });
 
-  if (visibleItems.length === 0 && state.menuCategory !== "all") {
-    const category = CATEGORY_DEFINITIONS.find((entry) => entry.id === state.menuCategory);
+  if (visibleItems.length === 0) {
     const empty = document.createElement("div");
     empty.className = "empty-state";
-    empty.textContent = category?.comingSoon
-      ? `${category.label} coming soon.`
-      : `No ${category?.label?.toLowerCase() || "menu"} items in this category yet.`;
+    if (state.menuCategory === "hidden") {
+      empty.textContent = "Menu list hidden. Choose a category to show items.";
+    } else {
+      const category = CATEGORY_DEFINITIONS.find((entry) => entry.id === state.menuCategory);
+      empty.textContent = category?.comingSoon
+        ? `${category.label} coming soon.`
+        : `No ${category?.label?.toLowerCase() || "menu"} items in this category yet.`;
+    }
     elements.menuList.appendChild(empty);
   }
 }
 
 function hydrateMenuCategoryFilter() {
-  const currentValue = CATEGORY_DEFINITIONS.some((category) => category.id === state.menuCategory) ? state.menuCategory : "all";
-  elements.menuCategoryFilter.innerHTML = '<option value="all">Show all</option>';
+  const currentValue = CATEGORY_DEFINITIONS.some((category) => category.id === state.menuCategory) || ["all", "hidden"].includes(state.menuCategory)
+    ? state.menuCategory
+    : "hidden";
+  elements.menuCategoryFilter.innerHTML = '<option value="hidden">Category</option><option value="all">Show all</option>';
   CATEGORY_DEFINITIONS.forEach((category) => {
     const option = document.createElement("option");
     option.value = category.id;
