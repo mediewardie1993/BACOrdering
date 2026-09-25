@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html>
+<head>
+<base target="_top">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root { --pink:#ff8fab; --pink-soft:#ffe3ea; --red:#ff5c7a; --red-deep:#e63e62; --text:#4a2230; --muted:#9b6b7a; --bg:#fff5f7; }
+  * { box-sizing:border-box; }
+  body { font-family:'Poppins',sans-serif; margin:0; background:var(--bg); color:var(--text); padding:16px; }
+  h1 { font-size:1.3rem; color:var(--red-deep); margin:4px 0 4px; }
+  .muted { color:var(--muted); font-size:.85rem; margin-bottom:16px; }
+  .denied { max-width:420px; margin:60px auto; text-align:center; }
+  .denied h2 { color:var(--red-deep); }
+  .toolbar { display:flex; gap:8px; margin-bottom:14px; flex-wrap:wrap; }
+  button { font-family:inherit; border:none; border-radius:10px; padding:10px 16px; font-weight:600; cursor:pointer; font-size:.85rem; }
+  .btn-primary { background:linear-gradient(135deg,var(--pink),var(--red)); color:#fff; }
+  .btn-secondary { background:var(--pink-soft); color:var(--red-deep); }
+  .btn-danger { background:#ffe0e0; color:#c62828; }
+  .list { display:grid; gap:10px; margin-bottom:20px; }
+  .row { background:#fff; border-radius:14px; padding:12px 16px; display:flex; justify-content:space-between; align-items:center;
+    box-shadow:0 4px 14px rgba(230,62,98,.08); cursor:pointer; }
+  .row.inactive { opacity:.55; }
+  .row .name { font-weight:600; }
+  .row .id { color:var(--muted); font-size:.8rem; }
+  .badge { font-size:.7rem; padding:3px 8px; border-radius:999px; font-weight:600; }
+  .badge.on { background:#e3fbe8; color:#1a8a3d; }
+  .badge.off { background:#f1f1f1; color:#888; }
+
+  .panel { background:#fff; border-radius:16px; padding:18px; box-shadow:0 6px 20px rgba(230,62,98,.1); }
+  .field { margin-bottom:12px; }
+  .field label { display:block; font-size:.75rem; font-weight:600; color:var(--muted); margin-bottom:4px; text-transform:uppercase; letter-spacing:.04em; }
+  .field input[type=text], .field input[type=url] {
+    width:100%; padding:10px 12px; border-radius:10px; border:1px solid #f0d3da; font-family:inherit; font-size:.9rem; }
+  .toggle-row { display:flex; align-items:center; justify-content:space-between; padding:10px 0; border-bottom:1px solid #fbe6ea; }
+  .toggle-row:last-child { border-bottom:none; }
+  .switch { position:relative; width:44px; height:24px; flex-shrink:0; }
+  .switch input { opacity:0; width:0; height:0; }
+  .slider { position:absolute; inset:0; background:#e6cdd3; border-radius:999px; transition:.2s; cursor:pointer; }
+  .slider::before { content:''; position:absolute; width:18px; height:18px; left:3px; top:3px; background:#fff; border-radius:50%; transition:.2s; }
+  input:checked + .slider { background:linear-gradient(135deg,var(--pink),var(--red)); }
+  input:checked + .slider::before { transform:translateX(20px); }
+  .actions { display:flex; gap:8px; margin-top:16px; flex-wrap:wrap; }
+  .hint { font-size:.75rem; color:var(--muted); margin-top:4px; }
+  #status { font-size:.85rem; margin-top:10px; min-height:18px; }
+  #status.ok { color:#1a8a3d; }
+  #status.err { color:#c62828; }
+  .back { margin-bottom:12px; }
+</style>
+</head>
+<body>
+
+<? if (!authorized) { ?>
+  <div class="denied">
+    <h2>🔒 Not authorized</h2>
+    <p class="muted">Signed in as: <?= email || '(not signed in)' ?></p>
+    <p>Only the account this admin page is set up for can access it.</p>
+  </div>
+<? } else { ?>
+  <h1>Business Cards Admin</h1>
+  <p class="muted">Signed in as <?= email ?></p>
+
+  <div id="listView">
+    <div class="toolbar">
+      <button class="btn-primary" onclick="newCard()">+ New Card</button>
+    </div>
+    <div class="list" id="cardList">Loading…</div>
+  </div>
+
+  <div id="editView" style="display:none">
+    <div class="back"><button class="btn-secondary" onclick="showList()">← Back to list</button></div>
+    <div class="panel">
+      <div class="field">
+        <label>Card ID (used in the link, e.g. "riesan")</label>
+        <input type="text" id="f_id">
+        <div class="hint" id="idHint"></div>
+      </div>
+      <div class="field"><label>Name</label><input type="text" id="f_name"></div>
+      <div class="field"><label>Roles (comma separated)</label><input type="text" id="f_roles" placeholder="Singer, Model, Host"></div>
+      <div class="field"><label>Profile photo URL</label><input type="url" id="f_profileUrl" placeholder="https://drive.google.com/thumbnail?id=..."></div>
+      <div class="field"><label>Cover photo URL</label><input type="url" id="f_coverUrl" placeholder="https://drive.google.com/thumbnail?id=..."></div>
+
+      <div class="toggle-row">
+        <span>Card is active (visible to public)</span>
+        <label class="switch"><input type="checkbox" id="f_active"><span class="slider"></span></label>
+      </div>
+
+      <div class="field" style="margin-top:14px"><label>Phone number</label><input type="text" id="f_phone" placeholder="09xxxxxxxxx"></div>
+      <div class="toggle-row"><span>Show phone / call button</span>
+        <label class="switch"><input type="checkbox" id="f_showPhone"><span class="slider"></span></label></div>
+      <div class="toggle-row"><span>Show Viber (uses phone number above)</span>
+        <label class="switch"><input type="checkbox" id="f_showViber"><span class="slider"></span></label></div>
+      <div class="toggle-row"><span>Show Telegram (uses phone number above)</span>
+        <label class="switch"><input type="checkbox" id="f_showTelegram"><span class="slider"></span></label></div>
+
+      <div class="field" style="margin-top:14px"><label>Facebook link</label><input type="url" id="f_facebook" placeholder="https://facebook.com/..."></div>
+      <div class="toggle-row"><span>Show Facebook</span>
+        <label class="switch"><input type="checkbox" id="f_showFacebook"><span class="slider"></span></label></div>
+
+      <div class="field" style="margin-top:14px"><label>Instagram link</label><input type="url" id="f_instagram" placeholder="https://instagram.com/..."></div>
+      <div class="toggle-row"><span>Show Instagram</span>
+        <label class="switch"><input type="checkbox" id="f_showInstagram"><span class="slider"></span></label></div>
+
+      <div class="actions">
+        <button class="btn-primary" onclick="saveCard()">Save</button>
+        <button class="btn-danger" onclick="removeCard()" id="deleteBtn">Delete</button>
+      </div>
+      <div id="status"></div>
+    </div>
+  </div>
+
+<script>
+  var cards = [];
+  var editingOriginalId = null;
+
+  function loadList() {
+    google.script.run.withSuccessHandler(function(data) {
+      cards = data;
+      renderList();
+    }).withFailureHandler(showErr).adminListCards();
+  }
+
+  function renderList() {
+    var el = document.getElementById('cardList');
+    if (!cards.length) { el.innerHTML = '<p class="muted">No cards yet. Tap "+ New Card" to add one.</p>'; return; }
+    el.innerHTML = '';
+    cards.forEach(function(c) {
+      var active = (c.active === true || c.active === 'TRUE' || c.active === 'true');
+      var row = document.createElement('div');
+      row.className = 'row' + (active ? '' : ' inactive');
+      row.onclick = function() { openCard(c.id); };
+      row.innerHTML =
+        '<div><div class="name">' + escapeHtml(c.name || '(no name)') + '</div><div class="id">id: ' + escapeHtml(c.id) + '</div></div>' +
+        '<span class="badge ' + (active ? 'on' : 'off') + '">' + (active ? 'ACTIVE' : 'OFF') + '</span>';
+      el.appendChild(row);
+    });
+  }
+
+  function escapeHtml(s) { return String(s).replace(/[&<>"]/g, function(c) { return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]; }); }
+
+  function boolOf(v) { return v === true || v === 'TRUE' || v === 'true' || v === 1 || v === '1'; }
+
+  function openCard(id) {
+    var c = cards.filter(function(x){ return x.id === id; })[0];
+    editingOriginalId = id;
+    document.getElementById('f_id').value = c.id || '';
+    document.getElementById('f_id').disabled = true;
+    document.getElementById('idHint').textContent = 'Link: (your web app URL)?id=' + c.id;
+    document.getElementById('f_name').value = c.name || '';
+    document.getElementById('f_roles').value = c.roles || '';
+    document.getElementById('f_profileUrl').value = c.profileUrl || '';
+    document.getElementById('f_coverUrl').value = c.coverUrl || '';
+    document.getElementById('f_active').checked = boolOf(c.active);
+    document.getElementById('f_phone').value = c.phone || '';
+    document.getElementById('f_showPhone').checked = boolOf(c.showPhone);
+    document.getElementById('f_showViber').checked = boolOf(c.showViber);
+    document.getElementById('f_showTelegram').checked = boolOf(c.showTelegram);
+    document.getElementById('f_facebook').value = c.facebook || '';
+    document.getElementById('f_showFacebook').checked = boolOf(c.showFacebook);
+    document.getElementById('f_instagram').value = c.instagram || '';
+    document.getElementById('f_showInstagram').checked = boolOf(c.showInstagram);
+    document.getElementById('deleteBtn').style.display = 'inline-block';
+    document.getElementById('status').textContent = '';
+    showEdit();
+  }
+
+  function newCard() {
+    editingOriginalId = null;
+    ['f_name','f_roles','f_profileUrl','f_coverUrl','f_phone','f_facebook','f_instagram'].forEach(function(id){
+      document.getElementById(id).value = '';
+    });
+    document.getElementById('f_id').value = '';
+    document.getElementById('f_id').disabled = false;
+    document.getElementById('idHint').textContent = 'Pick a short id, letters/numbers only, e.g. "riesan". Cannot be changed after saving.';
+    document.getElementById('f_active').checked = true;
+    document.getElementById('f_showPhone').checked = true;
+    document.getElementById('f_showViber').checked = true;
+    document.getElementById('f_showTelegram').checked = true;
+    document.getElementById('f_showFacebook').checked = true;
+    document.getElementById('f_showInstagram').checked = true;
+    document.getElementById('deleteBtn').style.display = 'none';
+    document.getElementById('status').textContent = '';
+    showEdit();
+  }
+
+  function saveCard() {
+    var card = {
+      id: document.getElementById('f_id').value.trim(),
+      name: document.getElementById('f_name').value.trim(),
+      roles: document.getElementById('f_roles').value.trim(),
+      profileUrl: document.getElementById('f_profileUrl').value.trim(),
+      coverUrl: document.getElementById('f_coverUrl').value.trim(),
+      active: document.getElementById('f_active').checked,
+      phone: document.getElementById('f_phone').value.trim(),
+      showPhone: document.getElementById('f_showPhone').checked,
+      showViber: document.getElementById('f_showViber').checked,
+      showTelegram: document.getElementById('f_showTelegram').checked,
+      facebook: document.getElementById('f_facebook').value.trim(),
+      showFacebook: document.getElementById('f_showFacebook').checked,
+      instagram: document.getElementById('f_instagram').value.trim(),
+      showInstagram: document.getElementById('f_showInstagram').checked
+    };
+    if (!card.id) { showErr({message:'Card ID is required.'}); return; }
+    document.getElementById('status').textContent = 'Saving…';
+    document.getElementById('status').className = '';
+    google.script.run.withSuccessHandler(function() {
+      document.getElementById('status').textContent = 'Saved ✔';
+      document.getElementById('status').className = 'ok';
+      loadList();
+    }).withFailureHandler(showErr).adminSaveCard(card);
+  }
+
+  function removeCard() {
+    if (!editingOriginalId) return;
+    if (!confirm('Delete this card? This cannot be undone.')) return;
+    google.script.run.withSuccessHandler(function() {
+      showList();
+      loadList();
+    }).withFailureHandler(showErr).adminDeleteCard(editingOriginalId);
+  }
+
+  function showErr(e) {
+    document.getElementById('status').textContent = 'Error: ' + (e && e.message ? e.message : e);
+    document.getElementById('status').className = 'err';
+  }
+
+  function showList() {
+    document.getElementById('listView').style.display = 'block';
+    document.getElementById('editView').style.display = 'none';
+    loadList();
+  }
+  function showEdit() {
+    document.getElementById('listView').style.display = 'none';
+    document.getElementById('editView').style.display = 'block';
+  }
+
+  loadList();
+</script>
+<? } ?>
+</body>
+</html>

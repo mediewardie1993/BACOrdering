@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html>
+<head>
+<base target="_top">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root { --pink:#ff8fab; --pink-soft:#ffe3ea; --red:#ff5c7a; --red-deep:#e63e62; --text:#4a2230; --muted:#9b6b7a; }
+  * { box-sizing:border-box; margin:0; padding:0; }
+  body { font-family:'Poppins',sans-serif; background:linear-gradient(160deg,#fff0f4,#ffd6e0,#ffc2cf); background-size:300% 300%;
+    animation:bgShift 12s ease infinite; color:var(--text); min-height:100vh; display:flex; justify-content:center; align-items:flex-start; padding:24px 16px; }
+  @keyframes bgShift { 0%,100%{background-position:0% 50%} 50%{background-position:100% 50%} }
+  .card { width:100%; max-width:420px; background:#fff; border-radius:24px; overflow:hidden; box-shadow:0 18px 40px rgba(230,62,98,.18);
+    animation:rise .8s ease-out both; position:relative; z-index:1; }
+  @keyframes rise { from{opacity:0; transform:translateY(30px)} to{opacity:1; transform:none} }
+  .cover { height:170px; background:linear-gradient(135deg,var(--pink),var(--red)) center/cover no-repeat; position:relative; }
+  .cover::after { content:''; position:absolute; inset:0; background:linear-gradient(to bottom,transparent 50%,rgba(255,92,122,.35)); }
+  .avatar-wrap { display:flex; justify-content:center; margin-top:-62px; position:relative; z-index:1; }
+  .avatar { width:124px; height:124px; border-radius:50%; border:5px solid #fff; object-fit:cover; object-position:center 30%;
+    background:var(--pink-soft); animation:pulse 2.8s infinite; }
+  @keyframes pulse { 0%{box-shadow:0 0 0 0 rgba(255,92,122,.45)} 70%{box-shadow:0 0 0 14px rgba(255,92,122,0)} 100%{box-shadow:0 0 0 0 rgba(255,92,122,0)} }
+  .body { padding:14px 22px 26px; text-align:center; }
+  h1 { font-size:1.6rem; font-weight:700; color:var(--red-deep); animation:fadeIn 1s .3s both; }
+  .roles { display:flex; flex-wrap:wrap; justify-content:center; gap:6px; margin:10px 0 4px; animation:fadeIn 1s .4s both; }
+  .roles span { background:var(--pink-soft); color:var(--red-deep); font-size:.7rem; font-weight:600;
+    padding:4px 10px; border-radius:999px; letter-spacing:.02em; }
+  .icon-row { display:flex; justify-content:center; flex-wrap:wrap; gap:12px; margin:12px 0 4px; animation:fadeIn 1s .45s both; }
+  .icon-row a { width:44px; height:44px; border-radius:50%; display:grid; place-items:center;
+    background:var(--pink-soft); color:var(--red); text-decoration:none; transition:transform .2s,background .2s,color .2s,box-shadow .2s; }
+  .icon-row a:hover { transform:translateY(-3px) scale(1.05); background:linear-gradient(135deg,var(--pink),var(--red)); color:#fff; box-shadow:0 8px 16px rgba(255,92,122,.35); }
+  .icon-row svg { width:22px; height:22px; fill:currentColor; }
+  .sub { color:var(--muted); font-size:.9rem; margin:8px 0 20px; animation:fadeIn 1s .5s both; }
+  @keyframes fadeIn { from{opacity:0} to{opacity:1} }
+  .section-title { font-size:.75rem; letter-spacing:.12em; text-transform:uppercase; color:var(--muted); margin:18px 0 10px; text-align:left; }
+  .links { display:grid; gap:10px; }
+  .link { display:flex; align-items:center; gap:12px; padding:13px 16px; border-radius:14px; background:var(--pink-soft); color:var(--text);
+    text-decoration:none; font-weight:500; text-align:left; transition:transform .2s,background .2s,color .2s,box-shadow .2s;
+    opacity:0; animation:slideIn .5s ease-out forwards; }
+  .link:hover { transform:translateY(-3px); background:linear-gradient(135deg,var(--pink),var(--red)); color:#fff; box-shadow:0 8px 18px rgba(255,92,122,.3); }
+  .link:hover .icon { background:rgba(255,255,255,.25); color:#fff; }
+  .link small { display:block; font-weight:400; font-size:.8rem; opacity:.8; }
+  .icon { width:38px; height:38px; border-radius:50%; flex-shrink:0; display:grid; place-items:center; background:#fff; color:var(--red); transition:background .2s,color .2s; }
+  .icon svg { width:20px; height:20px; fill:currentColor; }
+  @keyframes slideIn { from{opacity:0; transform:translateX(-16px)} to{opacity:1; transform:none} }
+  .hearts { position:fixed; inset:0; pointer-events:none; overflow:hidden; z-index:0; }
+  .hearts span { position:absolute; bottom:-30px; color:var(--pink); opacity:.5; animation:float linear infinite; }
+  @keyframes float { to { transform:translateY(-110vh) rotate(25deg); opacity:0; } }
+  .foot { margin-top:22px; font-size:.75rem; color:var(--muted); }
+  .eq { position:fixed; top:50%; right:14px; transform:translateY(-50%); display:flex; align-items:flex-end;
+    gap:4px; height:34px; z-index:2; opacity:.85; }
+  .eq span { width:5px; border-radius:3px; background:linear-gradient(180deg,var(--pink),var(--red-deep));
+    animation:eqBounce 1s ease-in-out infinite; transform-origin:bottom; }
+  .eq span:nth-child(1){ height:40%; animation-delay:0s; }
+  .eq span:nth-child(2){ height:100%; animation-delay:.15s; }
+  .eq span:nth-child(3){ height:60%; animation-delay:.3s; }
+  .eq span:nth-child(4){ height:85%; animation-delay:.45s; }
+  .eq span:nth-child(5){ height:50%; animation-delay:.6s; }
+  @keyframes eqBounce { 0%,100%{ transform:scaleY(.35); } 50%{ transform:scaleY(1); } }
+  @media (max-width:480px) { .eq { right:6px; height:26px; } .eq span { width:4px; } }
+  .empty { min-height:100vh; display:flex; align-items:center; justify-content:center; text-align:center; padding:24px; }
+  .empty h2 { color:var(--red-deep); margin-bottom:8px; }
+  .empty p { color:var(--muted); }
+</style>
+</head>
+<body>
+<? if (!card || card.active === false || card.active === 'FALSE' || card.active === 'false') { ?>
+  <div class="empty">
+    <div>
+      <h2>This card isn't available right now</h2>
+      <p>Please check back later.</p>
+    </div>
+  </div>
+<? } else {
+     var roleList = String(card.roles || '').split(',').map(function(r){ return r.trim(); }).filter(String);
+     var isOn = function(v){ return v === true || v === 'TRUE' || v === 'true' || v === 1 || v === '1'; };
+     var showPhone = isOn(card.showPhone) && card.phone;
+     var showViber = isOn(card.showViber) && card.viber;
+     var showTelegram = isOn(card.showTelegram) && card.telegram;
+     var showFacebook = isOn(card.showFacebook) && card.facebook;
+     var showInstagram = isOn(card.showInstagram) && card.instagram;
+     var digits = String(card.phone || '').replace(/[^0-9]/g, '');
+     var intlPhone = digits.replace(/^0/, '63');
+?>
+  <div class="hearts" id="hearts"></div>
+  <div class="eq" aria-hidden="true"><span></span><span></span><span></span><span></span><span></span></div>
+
+  <div class="card">
+    <div class="cover" <? if (card.coverUrl) { ?>style="background-image:url('<?= card.coverUrl ?>')"<? } ?>></div>
+    <div class="avatar-wrap">
+      <? if (card.profileUrl) { ?>
+      <img class="avatar" src="<?= card.profileUrl ?>" alt="<?= card.name ?>">
+      <? } ?>
+    </div>
+    <div class="body">
+      <h1><?= card.name ?></h1>
+      <? if (roleList.length) { ?>
+      <div class="roles">
+        <? roleList.forEach(function(r) { ?><span><?= r ?></span><? }); ?>
+      </div>
+      <? } ?>
+
+      <div class="icon-row">
+        <? if (showFacebook) { ?>
+        <a href="<?= card.facebook ?>" target="_blank" aria-label="Facebook">
+          <svg viewBox="0 0 24 24"><path d="M14 8V6.5c0-.7.2-1.2 1.2-1.2H17V2.2A23 23 0 0 0 14.4 2C11.9 2 10 3.6 10 6.4V8H7.3v3.4H10V22h4V11.4h2.8L17.3 8z"/></svg>
+        </a>
+        <? } if (showInstagram) { ?>
+        <a href="<?= card.instagram ?>" target="_blank" aria-label="Instagram">
+          <svg viewBox="0 0 24 24"><path d="M12 7.3A4.7 4.7 0 1 0 16.7 12 4.7 4.7 0 0 0 12 7.3zm0 7.7a3 3 0 1 1 3-3 3 3 0 0 1-3 3zm6-7.9a1.1 1.1 0 1 1-1.1-1.1A1.1 1.1 0 0 1 18 7.1zM21.9 8.1a5.4 5.4 0 0 0-1.5-3.8 5.5 5.5 0 0 0-3.8-1.5C15 2.7 9 2.7 7.4 2.8a5.5 5.5 0 0 0-3.8 1.5A5.4 5.4 0 0 0 2 8.1c-.1 1.6-.1 6.3 0 7.8a5.4 5.4 0 0 0 1.5 3.8 5.5 5.5 0 0 0 3.8 1.5c1.6.1 7.6.1 9.2 0a5.4 5.4 0 0 0 3.8-1.5 5.5 5.5 0 0 0 1.5-3.8c.1-1.6.1-6.2 0-7.8zm-2 9.5a3.1 3.1 0 0 1-1.8 1.8c-1.2.5-4.1.4-5.4.4s-4.3.1-5.4-.4a3.1 3.1 0 0 1-1.8-1.8c-.5-1.2-.4-4.1-.4-5.4s-.1-4.3.4-5.4a3.1 3.1 0 0 1 1.8-1.8c1.2-.5 4.1-.4 5.4-.4s4.3-.1 5.4.4a3.1 3.1 0 0 1 1.8 1.8c.5 1.2.4 4.1.4 5.4s.1 4.3-.4 5.4z"/></svg>
+        </a>
+        <? } if (showPhone) { ?>
+        <a href="tel:<?= card.phone ?>" aria-label="Call">
+          <svg viewBox="0 0 24 24"><path d="M6.6 10.8a15.1 15.1 0 0 0 6.6 6.6l2.2-2.2a1 1 0 0 1 1-.25 11.4 11.4 0 0 0 3.6.57 1 1 0 0 1 1 1V20a1 1 0 0 1-1 1A17 17 0 0 1 3 4a1 1 0 0 1 1-1h3.5a1 1 0 0 1 1 1c0 1.25.2 2.45.57 3.6a1 1 0 0 1-.25 1z"/></svg>
+        </a>
+        <? } if (showViber) { ?>
+        <a href="viber://chat?number=%2B<?= intlPhone ?>" aria-label="Viber">
+          <svg viewBox="0 0 24 24"><path d="M12 2C6.5 2 3 4.6 3 10.3c0 3 .9 5.1 2.6 6.4V21l3.2-2.3c1 .2 2.1.3 3.2.3 5.5 0 9-2.6 9-8.7S17.5 2 12 2zm4.3 12.3c-.3.8-1.4 1.4-2.1 1.4-.6 0-1.3-.2-3.4-1.3a9.6 9.6 0 0 1-3.6-3.9c-.5-1-.6-1.9-.2-2.6.3-.6.9-1 1.3-.9.3 0 .5.2.7.6l.7 1.5c.1.3 0 .6-.2.8l-.5.6c.6 1.2 1.6 2.2 2.8 2.8l.6-.6c.2-.2.5-.3.8-.2l1.5.7c.4.2.6.5.6.8z"/></svg>
+        </a>
+        <? } if (showTelegram) { ?>
+        <a href="https://t.me/+<?= intlPhone ?>" aria-label="Telegram">
+          <svg viewBox="0 0 24 24"><path d="M21.5 3.6 2.9 10.8c-1.3.5-1.2 1.2-.2 1.5l4.8 1.5 1.8 5.6c.2.7.5.8 1 .3l2.7-2.5 5 3.7c.9.5 1.5.2 1.8-.8l3.2-15.2c.3-1.3-.5-1.9-1.5-1.3zM9.6 14l8.2-7.5-6.9 8.3-.3 3.1z"/></svg>
+        </a>
+        <? } ?>
+      </div>
+
+      <p class="sub">Let's connect 💕</p>
+
+      <? if (showPhone || showViber || showTelegram) { ?>
+      <div class="section-title">Contact</div>
+      <div class="links">
+        <? if (showPhone) { ?>
+        <a class="link" href="tel:<?= card.phone ?>">
+          <span class="icon"><svg viewBox="0 0 24 24"><path d="M6.6 10.8a15.1 15.1 0 0 0 6.6 6.6l2.2-2.2a1 1 0 0 1 1-.25 11.4 11.4 0 0 0 3.6.57 1 1 0 0 1 1 1V20a1 1 0 0 1-1 1A17 17 0 0 1 3 4a1 1 0 0 1 1-1h3.5a1 1 0 0 1 1 1c0 1.25.2 2.45.57 3.6a1 1 0 0 1-.25 1z"/></svg></span>
+          <span>Mobile<small><?= card.phone ?></small></span>
+        </a>
+        <? } if (showViber) { ?>
+        <a class="link" href="viber://chat?number=%2B<?= intlPhone ?>">
+          <span class="icon"><svg viewBox="0 0 24 24"><path d="M12 2C6.5 2 3 4.6 3 10.3c0 3 .9 5.1 2.6 6.4V21l3.2-2.3c1 .2 2.1.3 3.2.3 5.5 0 9-2.6 9-8.7S17.5 2 12 2zm4.3 12.3c-.3.8-1.4 1.4-2.1 1.4-.6 0-1.3-.2-3.4-1.3a9.6 9.6 0 0 1-3.6-3.9c-.5-1-.6-1.9-.2-2.6.3-.6.9-1 1.3-.9.3 0 .5.2.7.6l.7 1.5c.1.3 0 .6-.2.8l-.5.6c.6 1.2 1.6 2.2 2.8 2.8l.6-.6c.2-.2.5-.3.8-.2l1.5.7c.4.2.6.5.6.8z"/></svg></span>
+          <span>Viber<small><?= card.phone ?></small></span>
+        </a>
+        <? } if (showTelegram) { ?>
+        <a class="link" href="https://t.me/+<?= intlPhone ?>">
+          <span class="icon"><svg viewBox="0 0 24 24"><path d="M21.5 3.6 2.9 10.8c-1.3.5-1.2 1.2-.2 1.5l4.8 1.5 1.8 5.6c.2.7.5.8 1 .3l2.7-2.5 5 3.7c.9.5 1.5.2 1.8-.8l3.2-15.2c.3-1.3-.5-1.9-1.5-1.3zM9.6 14l8.2-7.5-6.9 8.3-.3 3.1z"/></svg></span>
+          <span>Telegram<small><?= card.phone ?></small></span>
+        </a>
+        <? } ?>
+      </div>
+      <? } ?>
+
+      <? if (showFacebook || showInstagram) { ?>
+      <div class="section-title">Socials</div>
+      <div class="links">
+        <? if (showFacebook) { ?>
+        <a class="link" href="<?= card.facebook ?>" target="_blank">
+          <span class="icon"><svg viewBox="0 0 24 24"><path d="M14 8V6.5c0-.7.2-1.2 1.2-1.2H17V2.2A23 23 0 0 0 14.4 2C11.9 2 10 3.6 10 6.4V8H7.3v3.4H10V22h4V11.4h2.8L17.3 8z"/></svg></span>
+          <span>Facebook<small><?= card.name ?></small></span>
+        </a>
+        <? } if (showInstagram) { ?>
+        <a class="link" href="<?= card.instagram ?>" target="_blank">
+          <span class="icon"><svg viewBox="0 0 24 24"><path d="M12 7.3A4.7 4.7 0 1 0 16.7 12 4.7 4.7 0 0 0 12 7.3zm0 7.7a3 3 0 1 1 3-3 3 3 0 0 1-3 3zm6-7.9a1.1 1.1 0 1 1-1.1-1.1A1.1 1.1 0 0 1 18 7.1zM21.9 8.1a5.4 5.4 0 0 0-1.5-3.8 5.5 5.5 0 0 0-3.8-1.5C15 2.7 9 2.7 7.4 2.8a5.5 5.5 0 0 0-3.8 1.5A5.4 5.4 0 0 0 2 8.1c-.1 1.6-.1 6.3 0 7.8a5.4 5.4 0 0 0 1.5 3.8 5.5 5.5 0 0 0 3.8 1.5c1.6.1 7.6.1 9.2 0a5.4 5.4 0 0 0 3.8-1.5 5.5 5.5 0 0 0 1.5-3.8c.1-1.6.1-6.2 0-7.8zm-2 9.5a3.1 3.1 0 0 1-1.8 1.8c-1.2.5-4.1.4-5.4.4s-4.3.1-5.4-.4a3.1 3.1 0 0 1-1.8-1.8c-.5-1.2-.4-4.1-.4-5.4s-.1-4.3.4-5.4a3.1 3.1 0 0 1 1.8-1.8c1.2-.5 4.1-.4 5.4-.4s4.3-.1 5.4.4a3.1 3.1 0 0 1 1.8 1.8c.5 1.2.4 4.1.4 5.4s.1 4.3-.4 5.4z"/></svg></span>
+          <span>Instagram</span>
+        </a>
+        <? } ?>
+      </div>
+      <? } ?>
+
+      <p class="foot">© <?= card.name ?></p>
+    </div>
+  </div>
+
+<script>
+  var box = document.getElementById('hearts');
+  for (var i = 0; i < 14; i++) {
+    var s = document.createElement('span');
+    s.textContent = '♥';
+    s.style.left = Math.random() * 100 + '%';
+    s.style.fontSize = (10 + Math.random() * 16) + 'px';
+    s.style.animationDuration = (9 + Math.random() * 10) + 's';
+    s.style.animationDelay = (-Math.random() * 15) + 's';
+    box.appendChild(s);
+  }
+</script>
+<? } ?>
+</body>
+</html>
