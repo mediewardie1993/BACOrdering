@@ -1,5 +1,3 @@
-// Upload both photos to Google Drive, open each one, copy the ID from the link
-// (https://drive.google.com/file/d/THIS_PART_IS_THE_ID/view) and paste below.
 var PROFILE_PHOTO_ID = '1pbJ9RW4za-Cu0BKuw_Jw6ZZV8GlLNk8c';
 var COVER_PHOTO_ID   = '1xNjUSFC6MHLHzggBOtXoYrmiIMECEHM9';
 
@@ -20,4 +18,9 @@ function imageDataUrl_(id) {
   } catch (e) {
     return '';
   }
+}
+
+function testPhotos() {
+  Logger.log(DriveApp.getFileById(PROFILE_PHOTO_ID).getName());
+  Logger.log(DriveApp.getFileById(COVER_PHOTO_ID).getName());
 }

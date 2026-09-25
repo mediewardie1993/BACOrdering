@@ -4,101 +4,67 @@
 <base target="_top">
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
-  :root {
-    --pink: #ff8fab;
-    --pink-soft: #ffe3ea;
-    --red: #ff5c7a;
-    --red-deep: #e63e62;
-    --text: #4a2230;
-    --muted: #9b6b7a;
-  }
-  * { box-sizing: border-box; margin: 0; padding: 0; }
-  body {
-    font-family: 'Poppins', sans-serif;
-    background: linear-gradient(160deg, #fff0f4, #ffd6e0, #ffc2cf);
-    background-size: 300% 300%;
-    animation: bgShift 12s ease infinite;
-    color: var(--text);
-    min-height: 100vh;
-    display: flex; justify-content: center; align-items: flex-start;
-    padding: 24px 16px;
-  }
+  :root { --pink:#ff8fab; --pink-soft:#ffe3ea; --red:#ff5c7a; --red-deep:#e63e62; --text:#4a2230; --muted:#9b6b7a; }
+  * { box-sizing:border-box; margin:0; padding:0; }
+  body { font-family:'Poppins',sans-serif; background:linear-gradient(160deg,#fff0f4,#ffd6e0,#ffc2cf); background-size:300% 300%;
+    animation:bgShift 12s ease infinite; color:var(--text); min-height:100vh; display:flex; justify-content:center; align-items:flex-start; padding:24px 16px; }
   @keyframes bgShift { 0%,100%{background-position:0% 50%} 50%{background-position:100% 50%} }
-
-  .card {
-    width: 100%; max-width: 420px;
-    background: #fff; border-radius: 24px; overflow: hidden;
-    box-shadow: 0 18px 40px rgba(230, 62, 98, .18);
-    animation: rise .8s ease-out both;
-  }
+  .card { width:100%; max-width:420px; background:#fff; border-radius:24px; overflow:hidden; box-shadow:0 18px 40px rgba(230,62,98,.18);
+    animation:rise .8s ease-out both; position:relative; z-index:1; }
   @keyframes rise { from{opacity:0; transform:translateY(30px)} to{opacity:1; transform:none} }
+  .cover { height:170px; background:linear-gradient(135deg,var(--pink),var(--red)) center/cover no-repeat; position:relative; }
+  .cover::after { content:''; position:absolute; inset:0; background:linear-gradient(to bottom,transparent 50%,rgba(255,92,122,.35)); }
+  .avatar-wrap { display:flex; justify-content:center; margin-top:-62px; position:relative; z-index:1; }
+  .avatar { width:124px; height:124px; border-radius:50%; border:5px solid #fff; object-fit:cover; object-position:center 30%;
+    background:var(--pink-soft); animation:pulse 2.8s infinite; }
+  @keyframes pulse { 0%{box-shadow:0 0 0 0 rgba(255,92,122,.45)} 70%{box-shadow:0 0 0 14px rgba(255,92,122,0)} 100%{box-shadow:0 0 0 0 rgba(255,92,122,0)} }
+  .body { padding:14px 22px 26px; text-align:center; }
+  h1 { font-size:1.6rem; font-weight:700; color:var(--red-deep); animation:fadeIn 1s .3s both; }
 
-  .cover {
-    height: 170px;
-    background: linear-gradient(135deg, var(--pink), var(--red)) center/cover no-repeat;
-    position: relative;
-  }
-  .cover::after {
-    content: ''; position: absolute; inset: 0;
-    background: linear-gradient(to bottom, transparent 50%, rgba(255,92,122,.35));
-  }
+  .roles { display:flex; flex-wrap:wrap; justify-content:center; gap:6px; margin:10px 0 4px; animation:fadeIn 1s .4s both; }
+  .roles span { background:var(--pink-soft); color:var(--red-deep); font-size:.7rem; font-weight:600;
+    padding:4px 10px; border-radius:999px; letter-spacing:.02em; }
 
-  .avatar-wrap { display: flex; justify-content: center; margin-top: -62px; position: relative; z-index: 1; }
-  .avatar {
-    width: 124px; height: 124px; border-radius: 50%;
-    border: 5px solid #fff; object-fit: cover; object-position: center 30%;
-    background: var(--pink-soft);
-    box-shadow: 0 0 0 0 rgba(255,92,122,.5);
-    animation: pulse 2.8s infinite;
-  }
-  @keyframes pulse {
-    0% { box-shadow: 0 0 0 0 rgba(255,92,122,.45); }
-    70% { box-shadow: 0 0 0 14px rgba(255,92,122,0); }
-    100% { box-shadow: 0 0 0 0 rgba(255,92,122,0); }
-  }
-
-  .body { padding: 14px 22px 26px; text-align: center; }
-  h1 { font-size: 1.6rem; font-weight: 700; color: var(--red-deep); animation: fadeIn 1s .3s both; }
-  .sub { color: var(--muted); font-size: .9rem; margin-bottom: 20px; animation: fadeIn 1s .45s both; }
+  .sub { color:var(--muted); font-size:.9rem; margin:8px 0 20px; animation:fadeIn 1s .5s both; }
   @keyframes fadeIn { from{opacity:0} to{opacity:1} }
-
-  .section-title {
-    font-size: .75rem; letter-spacing: .12em; text-transform: uppercase;
-    color: var(--muted); margin: 18px 0 10px; text-align: left;
-  }
-  .links { display: grid; gap: 10px; }
-  .link {
-    display: flex; align-items: center; gap: 12px;
-    padding: 13px 16px; border-radius: 14px;
-    background: var(--pink-soft); color: var(--text);
-    text-decoration: none; font-weight: 500; text-align: left;
-    transition: transform .2s, background .2s, color .2s, box-shadow .2s;
-    opacity: 0; animation: slideIn .5s ease-out forwards;
-  }
-  .link:hover { transform: translateY(-3px); background: linear-gradient(135deg, var(--pink), var(--red)); color: #fff; box-shadow: 0 8px 18px rgba(255,92,122,.3); }
-  .link:hover .icon { background: rgba(255,255,255,.25); color: #fff; }
-  .link small { display: block; font-weight: 400; font-size: .8rem; opacity: .8; }
-  .icon {
-    width: 38px; height: 38px; border-radius: 50%; flex-shrink: 0;
-    display: grid; place-items: center;
-    background: #fff; color: var(--red);
-    transition: background .2s, color .2s;
-  }
-  .icon svg { width: 20px; height: 20px; fill: currentColor; }
+  .section-title { font-size:.75rem; letter-spacing:.12em; text-transform:uppercase; color:var(--muted); margin:18px 0 10px; text-align:left; }
+  .links { display:grid; gap:10px; }
+  .link { display:flex; align-items:center; gap:12px; padding:13px 16px; border-radius:14px; background:var(--pink-soft); color:var(--text);
+    text-decoration:none; font-weight:500; text-align:left; transition:transform .2s,background .2s,color .2s,box-shadow .2s;
+    opacity:0; animation:slideIn .5s ease-out forwards; }
+  .link:hover { transform:translateY(-3px); background:linear-gradient(135deg,var(--pink),var(--red)); color:#fff; box-shadow:0 8px 18px rgba(255,92,122,.3); }
+  .link:hover .icon { background:rgba(255,255,255,.25); color:#fff; }
+  .link small { display:block; font-weight:400; font-size:.8rem; opacity:.8; }
+  .icon { width:38px; height:38px; border-radius:50%; flex-shrink:0; display:grid; place-items:center; background:#fff; color:var(--red); transition:background .2s,color .2s; }
+  .icon svg { width:20px; height:20px; fill:currentColor; }
   @keyframes slideIn { from{opacity:0; transform:translateX(-16px)} to{opacity:1; transform:none} }
-  .links .link:nth-child(1){animation-delay:.55s} .links .link:nth-child(2){animation-delay:.65s}
-  .links .link:nth-child(3){animation-delay:.75s} .links .link:nth-child(4){animation-delay:.85s}
-  .links .link:nth-child(5){animation-delay:.95s}
+  .links .link:nth-child(1){animation-delay:.55s} .links .link:nth-child(2){animation-delay:.65s} .links .link:nth-child(3){animation-delay:.75s}
+  .hearts { position:fixed; inset:0; pointer-events:none; overflow:hidden; z-index:0; }
+  .hearts span { position:absolute; bottom:-30px; color:var(--pink); opacity:.5; animation:float linear infinite; }
+  @keyframes float { to { transform:translateY(-110vh) rotate(25deg); opacity:0; } }
+  .foot { margin-top:22px; font-size:.75rem; color:var(--muted); }
 
-  .hearts { position: fixed; inset: 0; pointer-events: none; overflow: hidden; z-index: 0; }
-  .hearts span { position: absolute; bottom: -30px; color: var(--pink); opacity: .5; animation: float linear infinite; }
-  @keyframes float { to { transform: translateY(-110vh) rotate(25deg); opacity: 0; } }
-  .card { position: relative; z-index: 1; }
-  .foot { margin-top: 22px; font-size: .75rem; color: var(--muted); }
+  /* Pulsing EQ bars, floating on the side of the card */
+  .eq { position:fixed; top:50%; right:14px; transform:translateY(-50%); display:flex; align-items:flex-end;
+    gap:4px; height:34px; z-index:2; opacity:.85; }
+  .eq span { width:5px; border-radius:3px; background:linear-gradient(180deg,var(--pink),var(--red-deep));
+    animation:eqBounce 1s ease-in-out infinite; }
+  .eq span:nth-child(1){ height:40%; animation-delay:0s; }
+  .eq span:nth-child(2){ height:100%; animation-delay:.15s; }
+  .eq span:nth-child(3){ height:60%; animation-delay:.3s; }
+  .eq span:nth-child(4){ height:85%; animation-delay:.45s; }
+  .eq span:nth-child(5){ height:50%; animation-delay:.6s; }
+  @keyframes eqBounce { 0%,100%{ transform:scaleY(.35); } 50%{ transform:scaleY(1); } }
+  .eq span { transform-origin:bottom; }
+  @media (max-width:480px) { .eq { right:6px; height:26px; } .eq span { width:4px; } }
 </style>
 </head>
 <body>
   <div class="hearts" id="hearts"></div>
+
+  <div class="eq" aria-hidden="true">
+    <span></span><span></span><span></span><span></span><span></span>
+  </div>
 
   <div class="card">
     <div class="cover" <? if (coverSrc) { ?>style="background-image:url('<?= coverSrc ?>')"<? } ?>></div>
@@ -107,6 +73,12 @@
     </div>
     <div class="body">
       <h1>Riesan Hermosa</h1>
+      <div class="roles">
+        <span>Singer</span>
+        <span>Model</span>
+        <span>Host</span>
+        <span>Wedding Organizer</span>
+      </div>
       <p class="sub">Let's connect 💕</p>
 
       <div class="section-title">Contact</div>
