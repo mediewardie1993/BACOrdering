@@ -339,8 +339,10 @@
     return ((parts[0]||'')[0] || '') + ((parts.length>1 ? parts[parts.length-1][0] : '') || '');
   }
 
+  var BASE_URL = '<?= baseUrl ?>';
+
   function cardUrl(id) {
-    return window.location.href.split('?')[0] + '?id=' + encodeURIComponent(id);
+    return BASE_URL + '?id=' + encodeURIComponent(id);
   }
 
   function copyLink(ev, id) {

@@ -41,6 +41,7 @@ function renderAdmin_() {
   var t = HtmlService.createTemplateFromFile('Admin');
   t.authorized = (email === ADMIN_EMAIL);
   t.email = email;
+  t.baseUrl = ScriptApp.getService().getUrl();
   return t.evaluate()
     .setTitle('Card Admin')
     .addMetaTag('viewport', 'width=device-width, initial-scale=1')
