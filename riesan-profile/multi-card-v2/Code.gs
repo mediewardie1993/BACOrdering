@@ -12,11 +12,13 @@ var COLUMNS = ['id','active','name','roles','phone','viber','telegram','facebook
 // Public card:  .../exec?id=riesan
 // Admin panel:  .../exec?page=admin
 function doGet(e) {
-  var page = (e.parameter.page || '').toLowerCase();
+  e = e || {};
+  var params = e.parameter || {};
+  var page = (params.page || '').toLowerCase();
   if (page === 'admin') {
     return renderAdmin_();
   }
-  var id = e.parameter.id;
+  var id = params.id;
   if (!id) {
     return HtmlService.createHtmlOutput(
       '<p style="font-family:sans-serif;padding:40px;text-align:center;color:#999">No card selected.</p>');
