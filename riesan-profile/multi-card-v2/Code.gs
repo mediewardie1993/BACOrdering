@@ -2,7 +2,7 @@
 var ADMIN_EMAIL = 'medward.studiodev@gmail.com';      // only this Google account can open the admin page
 var SHEET_ID    = '1pqExON858uEvvfpLqHUaxPet0tRMlQMd3bGzkCvVrlY'; // "Business Cards Database" sheet
 var SHEET_NAME  = 'Cards';
-var PHOTOS_FOLDER_ID = '1mYC-nCadX73sxyXlU5ajBTHTxrK4SD3B'; // "Business Card Photos" folder
+var PHOTOS_FOLDER_ID = '14qY5AnT476JjrCdJ8h2GB4yZTSAW7ln-'; // "BC pictures" folder
 
 var COLUMNS = ['id','active','name','roles','phone','viber','telegram','facebook','instagram',
   'profileUrl','coverUrl','showPhone','showViber','showTelegram','showFacebook','showInstagram','theme',
