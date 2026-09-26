@@ -300,8 +300,13 @@
           urlField.value = result.url;
           syncPreview(kind);
           updatePreview();
-          statusEl.textContent = 'Uploaded ✔';
-          statusEl.className = 'upload-status ok';
+          if (result.warning) {
+            statusEl.textContent = '⚠ ' + result.warning;
+            statusEl.className = 'upload-status err';
+          } else {
+            statusEl.textContent = 'Uploaded ✔';
+            statusEl.className = 'upload-status ok';
+          }
         })
         .withFailureHandler(function(e) {
           statusEl.textContent = 'Upload failed: ' + (e && e.message ? e.message : e);

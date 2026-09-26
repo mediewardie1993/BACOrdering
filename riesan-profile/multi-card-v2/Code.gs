@@ -111,11 +111,20 @@ function adminUploadPhoto(base64Data, mimeType, filename) {
   var bytes = Utilities.base64Decode(base64Data);
   var blob = Utilities.newBlob(bytes, mimeType, filename || 'photo');
   var file = folder.createFile(blob);
-  file.setSharing(DriveApp.Access.ANYONE_WITH_LINK, DriveApp.Permission.VIEW);
   var fileId = file.getId();
+
+  var sharingWarning = null;
+  try {
+    file.setSharing(DriveApp.Access.ANYONE_WITH_LINK, DriveApp.Permission.VIEW);
+  } catch (err) {
+    sharingWarning = 'Uploaded, but could not auto-share the file (' + err.message + '). ' +
+      'Open it in Drive and set sharing to "Anyone with the link" manually, or the photo may not show on the public card.';
+  }
+
   return {
     url: 'https://drive.google.com/thumbnail?id=' + fileId + '&sz=w1000',
-    fileId: fileId
+    fileId: fileId,
+    warning: sharingWarning
   };
 }
 
