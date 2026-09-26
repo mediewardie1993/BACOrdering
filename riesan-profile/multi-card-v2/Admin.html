@@ -103,6 +103,10 @@
       <div class="toggle-row"><span>Show Telegram (uses phone number above)</span>
         <label class="switch"><input type="checkbox" id="f_showTelegram"><span class="slider"></span></label></div>
 
+      <div class="field" style="margin-top:14px"><label>Email address</label><input type="text" id="f_email" placeholder="name@example.com"></div>
+      <div class="toggle-row"><span>Show email</span>
+        <label class="switch"><input type="checkbox" id="f_showEmail"><span class="slider"></span></label></div>
+
       <div class="field" style="margin-top:14px"><label>Facebook link</label><input type="url" id="f_facebook" placeholder="https://facebook.com/..."></div>
       <div class="toggle-row"><span>Show Facebook</span>
         <label class="switch"><input type="checkbox" id="f_showFacebook"><span class="slider"></span></label></div>
@@ -198,6 +202,8 @@
     document.getElementById('f_showPhone').checked = boolOf(c.showPhone);
     document.getElementById('f_showViber').checked = boolOf(c.showViber);
     document.getElementById('f_showTelegram').checked = boolOf(c.showTelegram);
+    document.getElementById('f_email').value = c.email || '';
+    document.getElementById('f_showEmail').checked = boolOf(c.showEmail);
     document.getElementById('f_facebook').value = c.facebook || '';
     document.getElementById('f_showFacebook').checked = boolOf(c.showFacebook);
     document.getElementById('f_instagram').value = c.instagram || '';
@@ -209,7 +215,7 @@
 
   function newCard() {
     editingOriginalId = null;
-    ['f_name','f_roles','f_profileUrl','f_coverUrl','f_phone','f_facebook','f_instagram'].forEach(function(id){
+    ['f_name','f_roles','f_profileUrl','f_coverUrl','f_phone','f_email','f_facebook','f_instagram'].forEach(function(id){
       document.getElementById(id).value = '';
     });
     document.getElementById('f_id').value = '';
@@ -221,6 +227,7 @@
     document.getElementById('f_showPhone').checked = true;
     document.getElementById('f_showViber').checked = true;
     document.getElementById('f_showTelegram').checked = true;
+    document.getElementById('f_showEmail').checked = true;
     document.getElementById('f_showFacebook').checked = true;
     document.getElementById('f_showInstagram').checked = true;
     document.getElementById('deleteBtn').style.display = 'none';
@@ -241,6 +248,8 @@
       showPhone: document.getElementById('f_showPhone').checked,
       showViber: document.getElementById('f_showViber').checked,
       showTelegram: document.getElementById('f_showTelegram').checked,
+      email: document.getElementById('f_email').value.trim(),
+      showEmail: document.getElementById('f_showEmail').checked,
       facebook: document.getElementById('f_facebook').value.trim(),
       showFacebook: document.getElementById('f_showFacebook').checked,
       instagram: document.getElementById('f_instagram').value.trim(),

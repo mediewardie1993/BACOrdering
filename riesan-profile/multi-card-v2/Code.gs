@@ -4,7 +4,8 @@ var SHEET_ID    = '1pqExON858uEvvfpLqHUaxPet0tRMlQMd3bGzkCvVrlY'; // "Business C
 var SHEET_NAME  = 'Cards';
 
 var COLUMNS = ['id','active','name','roles','phone','viber','telegram','facebook','instagram',
-  'profileUrl','coverUrl','showPhone','showViber','showTelegram','showFacebook','showInstagram','theme'];
+  'profileUrl','coverUrl','showPhone','showViber','showTelegram','showFacebook','showInstagram','theme',
+  'email','showEmail'];
 
 // ====== ROUTING ======
 // Public card:  .../exec?id=riesan
