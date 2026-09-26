@@ -34,6 +34,13 @@
   .badge.on { background:#e3fbe8; color:#1a8a3d; }
   .badge.off { background:#f1f1f1; color:#888; }
   .search { width:100%; padding:10px 14px; border-radius:12px; border:1px solid #f0d3da; font-family:inherit; font-size:.9rem; margin-bottom:12px; background:#fff; }
+  .row-actions { display:flex; gap:6px; flex-shrink:0; }
+  .row-actions button, .row-actions a { border:none; background:var(--pink-soft); color:var(--red-deep); border-radius:8px;
+    width:30px; height:30px; display:grid; place-items:center; cursor:pointer; text-decoration:none; font-size:.9rem; padding:0; }
+  .row-actions button:active, .row-actions a:active { background:var(--pink); color:#fff; }
+  .copy-toast { position:fixed; bottom:20px; left:50%; transform:translateX(-50%); background:#333; color:#fff;
+    padding:8px 16px; border-radius:999px; font-size:.8rem; opacity:0; pointer-events:none; transition:opacity .2s; z-index:50; }
+  .copy-toast.show { opacity:1; }
 
   .panel { background:#fff; border-radius:16px; padding:18px; box-shadow:0 6px 20px rgba(230,62,98,.1); }
   .field { margin-bottom:12px; }
@@ -66,6 +73,19 @@
   .upload-status { font-size:.75rem; color:var(--muted); margin-top:4px; }
   .upload-status.ok { color:#1a8a3d; }
   .upload-status.err { color:#c62828; }
+
+  .preview-wrap { display:flex; justify-content:center; padding:20px 0 8px; background:#f6eef0; border-radius:16px; margin-bottom:16px; }
+  .preview-card { width:220px; background:#fff; border-radius:18px; overflow:hidden; box-shadow:0 10px 24px rgba(0,0,0,.15); }
+  .preview-cover { height:70px; background:linear-gradient(135deg,var(--pv-pink,#ff8fab),var(--pv-red,#ff5c7a)); background-size:cover; background-position:center; }
+  .preview-avatar-wrap { display:flex; justify-content:center; margin-top:-28px; }
+  .preview-avatar { width:56px; height:56px; border-radius:50%; border:3px solid #fff; object-fit:cover; background:var(--pv-pink-soft,#ffe3ea); }
+  .preview-body { padding:6px 12px 16px; text-align:center; }
+  .preview-name { font-size:.85rem; font-weight:700; color:var(--pv-red-deep,#e63e62); margin-top:4px; }
+  .preview-roles { display:flex; flex-wrap:wrap; justify-content:center; gap:3px; margin-top:6px; }
+  .preview-roles span { background:var(--pv-pink-soft,#ffe3ea); color:var(--pv-red-deep,#e63e62); font-size:.55rem; font-weight:600; padding:2px 6px; border-radius:999px; }
+  .preview-icons { display:flex; justify-content:center; gap:6px; margin-top:8px; }
+  .preview-icons span { width:20px; height:20px; border-radius:50%; background:var(--pv-pink-soft,#ffe3ea); }
+  .preview-label { text-align:center; font-size:.7rem; color:var(--muted); margin-bottom:2px; }
 </style>
 </head>
 <body>
@@ -87,6 +107,7 @@
     <input type="text" class="search" id="searchBox" placeholder="Search by name or id…" oninput="renderList()">
     <div class="list" id="cardList">Loading…</div>
   </div>
+  <div class="copy-toast" id="copyToast">Link copied</div>
 
   <div id="editView" style="display:none">
     <div class="back"><button class="btn-secondary" onclick="showList()">← Back to list</button></div>
@@ -96,14 +117,27 @@
         <input type="text" id="f_id">
         <div class="hint" id="idHint"></div>
       </div>
-      <div class="field"><label>Name</label><input type="text" id="f_name"></div>
-      <div class="field"><label>Roles (comma separated)</label><input type="text" id="f_roles" placeholder="Singer, Model, Host"></div>
+      <div class="field"><label>Name</label><input type="text" id="f_name" oninput="updatePreview()"></div>
+      <div class="field"><label>Roles (comma separated)</label><input type="text" id="f_roles" placeholder="Singer, Model, Host" oninput="updatePreview()"></div>
+
+      <div class="preview-label">Live preview</div>
+      <div class="preview-wrap">
+        <div class="preview-card" id="previewCard">
+          <div class="preview-cover" id="previewCover"></div>
+          <div class="preview-avatar-wrap"><img class="preview-avatar" id="previewAvatar"></div>
+          <div class="preview-body">
+            <div class="preview-name" id="previewName">Name</div>
+            <div class="preview-roles" id="previewRoles"></div>
+            <div class="preview-icons"><span></span><span></span><span></span></div>
+          </div>
+        </div>
+      </div>
 
       <div class="field">
         <label>Color theme</label>
         <div class="swatch-row">
           <span class="swatch" id="swatchPreview"></span>
-          <select id="f_theme" onchange="updateSwatch()" style="flex:1"></select>
+          <select id="f_theme" onchange="updateSwatch(); updatePreview()" style="flex:1"></select>
         </div>
       </div>
 
@@ -116,7 +150,7 @@
             <div class="upload-status" id="profileUploadStatus"></div>
           </div>
         </div>
-        <input type="url" id="f_profileUrl" placeholder="or paste a photo URL" style="margin-top:8px" oninput="syncPreview('profile')">
+        <input type="url" id="f_profileUrl" placeholder="or paste a photo URL" style="margin-top:8px" oninput="syncPreview('profile'); updatePreview()">
       </div>
       <div class="field">
         <label>Cover photo</label>
@@ -127,7 +161,7 @@
             <div class="upload-status" id="coverUploadStatus"></div>
           </div>
         </div>
-        <input type="url" id="f_coverUrl" placeholder="or paste a photo URL" style="margin-top:8px" oninput="syncPreview('cover')">
+        <input type="url" id="f_coverUrl" placeholder="or paste a photo URL" style="margin-top:8px" oninput="syncPreview('cover'); updatePreview()">
       </div>
 
       <div class="toggle-row">
@@ -165,17 +199,28 @@
 
 <script>
   var THEMES = [
-    { key:'classic',    label:'Classic — Pink & Red',                 swatch:'#ff5c7a' },
-    { key:'artist_m',   label:'Graphic Artist — Amber & Slate (M)',   swatch:'#ff9800' },
-    { key:'artist_f',   label:'Graphic Artist — Coral & Lilac (F)',   swatch:'#c792ea' },
-    { key:'business_m', label:'Business — Navy & Gold (M)',          swatch:'#2b5583' },
-    { key:'business_f', label:'Business — Plum & Rose Gold (F)',     swatch:'#b76e79' },
-    { key:'engineer_m', label:'Engineer/Architect — Steel & Cyan (M)', swatch:'#2b6777' },
-    { key:'engineer_f', label:'Engineer/Architect — Slate & Teal (F)', swatch:'#3f7268' },
-    { key:'musician_m', label:'Musician — Midnight & Neon Violet (M)', swatch:'#6c3bd1' },
-    { key:'musician_f', label:'Musician — Magenta & Violet (F)',      swatch:'#c23bce' },
-    { key:'photo_m',    label:'Photographer — Charcoal & Amber (M)',  swatch:'#8a6d3b' },
-    { key:'photo_f',    label:'Photographer — Blush & Warm Grey (F)', swatch:'#a97c68' }
+    { key:'classic',    label:'Classic — Pink & Red',                 swatch:'#ff5c7a',
+      p:'#ff8fab', ps:'#ffe3ea', r:'#ff5c7a', rd:'#e63e62' },
+    { key:'artist_m',   label:'Graphic Artist — Amber & Slate (M)',   swatch:'#ff9800',
+      p:'#ffb648', ps:'#fff3e0', r:'#ff9800', rd:'#e65100' },
+    { key:'artist_f',   label:'Graphic Artist — Coral & Lilac (F)',   swatch:'#c792ea',
+      p:'#c792ea', ps:'#f3e8ff', r:'#ff8fa3', rd:'#d6336c' },
+    { key:'business_m', label:'Business — Navy & Gold (M)',          swatch:'#2b5583',
+      p:'#d4af37', ps:'#f5eeda', r:'#2b5583', rd:'#0f2338' },
+    { key:'business_f', label:'Business — Plum & Rose Gold (F)',     swatch:'#b76e79',
+      p:'#e0b0a0', ps:'#fbeee9', r:'#b76e79', rd:'#6a2c3b' },
+    { key:'engineer_m', label:'Engineer/Architect — Steel & Cyan (M)', swatch:'#2b6777',
+      p:'#4fd1e3', ps:'#e3fbfd', r:'#2b6777', rd:'#12303a' },
+    { key:'engineer_f', label:'Engineer/Architect — Slate & Teal (F)', swatch:'#3f7268',
+      p:'#7fd8c6', ps:'#e6faf6', r:'#3f7268', rd:'#1d3d36' },
+    { key:'musician_m', label:'Musician — Midnight & Neon Violet (M)', swatch:'#6c3bd1',
+      p:'#b18cff', ps:'#efe6ff', r:'#6c3bd1', rd:'#2e1065' },
+    { key:'musician_f', label:'Musician — Magenta & Violet (F)',      swatch:'#c23bce',
+      p:'#ff6fb5', ps:'#ffe3f2', r:'#c23bce', rd:'#6a1b8a' },
+    { key:'photo_m',    label:'Photographer — Charcoal & Amber (M)',  swatch:'#8a6d3b',
+      p:'#e0a95e', ps:'#fbf1e0', r:'#8a6d3b', rd:'#2b2118' },
+    { key:'photo_f',    label:'Photographer — Blush & Warm Grey (F)', swatch:'#a97c68',
+      p:'#e8b4a0', ps:'#fdf1ec', r:'#a97c68', rd:'#4a332b' }
   ];
 
   var cards = [];
@@ -196,6 +241,36 @@
     var key = document.getElementById('f_theme').value;
     var t = THEMES.filter(function(x){ return x.key === key; })[0] || THEMES[0];
     document.getElementById('swatchPreview').style.background = t.swatch;
+  }
+
+  function updatePreview() {
+    var key = document.getElementById('f_theme').value;
+    var t = THEMES.filter(function(x){ return x.key === key; })[0] || THEMES[0];
+    var card = document.getElementById('previewCard');
+    card.style.setProperty('--pv-pink', t.p);
+    card.style.setProperty('--pv-pink-soft', t.ps);
+    card.style.setProperty('--pv-red', t.r);
+    card.style.setProperty('--pv-red-deep', t.rd);
+
+    var coverUrl = document.getElementById('f_coverUrl').value.trim();
+    var coverEl = document.getElementById('previewCover');
+    coverEl.style.backgroundImage = coverUrl ? "url('" + coverUrl + "')" : '';
+
+    var profileUrl = document.getElementById('f_profileUrl').value.trim();
+    var avatarEl = document.getElementById('previewAvatar');
+    avatarEl.src = profileUrl || '';
+    avatarEl.style.visibility = profileUrl ? 'visible' : 'hidden';
+
+    document.getElementById('previewName').textContent = document.getElementById('f_name').value.trim() || 'Name';
+
+    var roles = document.getElementById('f_roles').value.split(',').map(function(r){ return r.trim(); }).filter(Boolean);
+    var rolesEl = document.getElementById('previewRoles');
+    rolesEl.innerHTML = '';
+    roles.slice(0, 4).forEach(function(r) {
+      var span = document.createElement('span');
+      span.textContent = r;
+      rolesEl.appendChild(span);
+    });
   }
 
   function syncPreview(kind) {
@@ -224,6 +299,7 @@
           var urlField = document.getElementById(kind === 'profile' ? 'f_profileUrl' : 'f_coverUrl');
           urlField.value = result.url;
           syncPreview(kind);
+          updatePreview();
           statusEl.textContent = 'Uploaded ✔';
           statusEl.className = 'upload-status ok';
         })
@@ -258,6 +334,31 @@
     return ((parts[0]||'')[0] || '') + ((parts.length>1 ? parts[parts.length-1][0] : '') || '');
   }
 
+  function cardUrl(id) {
+    return window.location.href.split('?')[0] + '?id=' + encodeURIComponent(id);
+  }
+
+  function copyLink(ev, id) {
+    ev.stopPropagation();
+    var url = cardUrl(id);
+    var done = function() {
+      var toast = document.getElementById('copyToast');
+      toast.classList.add('show');
+      setTimeout(function() { toast.classList.remove('show'); }, 1500);
+    };
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(url).then(done).catch(function() { promptCopy(url); });
+    } else {
+      promptCopy(url);
+    }
+  }
+
+  function promptCopy(url) {
+    window.prompt('Copy this link:', url);
+  }
+
+  function stop(ev) { ev.stopPropagation(); }
+
   function renderList() {
     var el = document.getElementById('cardList');
     var q = (document.getElementById('searchBox').value || '').toLowerCase().trim();
@@ -287,6 +388,10 @@
           '<div class="id">id: ' + escapeHtml(c.id) + '</div>' +
         '</div>' +
         '<span class="badge ' + (active ? 'on' : 'off') + '">' + (active ? 'ACTIVE' : 'OFF') + '</span>' +
+        '<div class="row-actions">' +
+          '<button title="Copy link" onclick="copyLink(event, \'' + escapeHtml(c.id) + '\')">🔗</button>' +
+          '<a title="View card" href="' + cardUrl(c.id) + '" target="_blank" onclick="stop(event)">↗</a>' +
+        '</div>' +
         '<span class="chev">›</span>';
       el.appendChild(row);
     });
@@ -325,6 +430,7 @@
     document.getElementById('f_showInstagram').checked = boolOf(c.showInstagram);
     document.getElementById('deleteBtn').style.display = 'inline-block';
     document.getElementById('status').textContent = '';
+    updatePreview();
     showEdit();
   }
 
@@ -351,6 +457,7 @@
     document.getElementById('f_showInstagram').checked = true;
     document.getElementById('deleteBtn').style.display = 'none';
     document.getElementById('status').textContent = '';
+    updatePreview();
     showEdit();
   }
 
