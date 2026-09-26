@@ -2,6 +2,7 @@
 var ADMIN_EMAIL = 'medward.studiodev@gmail.com';      // only this Google account can open the admin page
 var SHEET_ID    = '1pqExON858uEvvfpLqHUaxPet0tRMlQMd3bGzkCvVrlY'; // "Business Cards Database" sheet
 var SHEET_NAME  = 'Cards';
+var PHOTOS_FOLDER_ID = '1mYC-nCadX73sxyXlU5ajBTHTxrK4SD3B'; // "Business Card Photos" folder
 
 var COLUMNS = ['id','active','name','roles','phone','viber','telegram','facebook','instagram',
   'profileUrl','coverUrl','showPhone','showViber','showTelegram','showFacebook','showInstagram','theme',
@@ -100,6 +101,20 @@ function adminSaveCard(card) {
     sheet.getRange(rowIndex, 1, 1, COLUMNS.length).setValues([rowValues]);
   }
   return true;
+}
+
+function adminUploadPhoto(base64Data, mimeType, filename) {
+  requireAdmin_();
+  var folder = DriveApp.getFolderById(PHOTOS_FOLDER_ID);
+  var bytes = Utilities.base64Decode(base64Data);
+  var blob = Utilities.newBlob(bytes, mimeType, filename || 'photo');
+  var file = folder.createFile(blob);
+  file.setSharing(DriveApp.Access.ANYONE_WITH_LINK, DriveApp.Permission.VIEW);
+  var fileId = file.getId();
+  return {
+    url: 'https://drive.google.com/thumbnail?id=' + fileId + '&sz=w1000',
+    fileId: fileId
+  };
 }
 
 function adminDeleteCard(id) {

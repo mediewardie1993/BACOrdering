@@ -56,6 +56,16 @@
   .back { margin-bottom:12px; }
   .swatch-row { display:flex; align-items:center; gap:10px; }
   .swatch { width:22px; height:22px; border-radius:50%; flex-shrink:0; border:1px solid rgba(0,0,0,.08); }
+  .photo-field { display:flex; align-items:center; gap:12px; }
+  .photo-preview { width:56px; height:56px; border-radius:12px; object-fit:cover; background:var(--pink-soft); flex-shrink:0; display:none; }
+  .photo-preview.cover-preview { border-radius:8px; width:80px; height:52px; }
+  .photo-controls { flex:1; }
+  .upload-btn { display:inline-block; background:var(--pink-soft); color:var(--red-deep); border-radius:10px; padding:8px 14px;
+    font-size:.82rem; font-weight:600; cursor:pointer; }
+  .upload-btn input { display:none; }
+  .upload-status { font-size:.75rem; color:var(--muted); margin-top:4px; }
+  .upload-status.ok { color:#1a8a3d; }
+  .upload-status.err { color:#c62828; }
 </style>
 </head>
 <body>
@@ -97,8 +107,28 @@
         </div>
       </div>
 
-      <div class="field"><label>Profile photo URL</label><input type="url" id="f_profileUrl" placeholder="https://drive.google.com/thumbnail?id=..."></div>
-      <div class="field"><label>Cover photo URL</label><input type="url" id="f_coverUrl" placeholder="https://drive.google.com/thumbnail?id=..."></div>
+      <div class="field">
+        <label>Profile photo</label>
+        <div class="photo-field">
+          <img class="photo-preview" id="profilePreview">
+          <div class="photo-controls">
+            <label class="upload-btn">Upload photo<input type="file" accept="image/*" onchange="uploadPhoto(this,'profile')"></label>
+            <div class="upload-status" id="profileUploadStatus"></div>
+          </div>
+        </div>
+        <input type="url" id="f_profileUrl" placeholder="or paste a photo URL" style="margin-top:8px" oninput="syncPreview('profile')">
+      </div>
+      <div class="field">
+        <label>Cover photo</label>
+        <div class="photo-field">
+          <img class="photo-preview cover-preview" id="coverPreview">
+          <div class="photo-controls">
+            <label class="upload-btn">Upload photo<input type="file" accept="image/*" onchange="uploadPhoto(this,'cover')"></label>
+            <div class="upload-status" id="coverUploadStatus"></div>
+          </div>
+        </div>
+        <input type="url" id="f_coverUrl" placeholder="or paste a photo URL" style="margin-top:8px" oninput="syncPreview('cover')">
+      </div>
 
       <div class="toggle-row">
         <span>Card is active (visible to public)</span>
@@ -168,6 +198,49 @@
     document.getElementById('swatchPreview').style.background = t.swatch;
   }
 
+  function syncPreview(kind) {
+    var url = document.getElementById(kind === 'profile' ? 'f_profileUrl' : 'f_coverUrl').value.trim();
+    var img = document.getElementById(kind + 'Preview');
+    if (url) {
+      img.src = url;
+      img.style.display = 'block';
+    } else {
+      img.style.display = 'none';
+    }
+  }
+
+  function uploadPhoto(input, kind) {
+    var file = input.files && input.files[0];
+    if (!file) return;
+    var statusEl = document.getElementById(kind + 'UploadStatus');
+    statusEl.textContent = 'Uploading…';
+    statusEl.className = 'upload-status';
+    var reader = new FileReader();
+    reader.onload = function() {
+      var dataUrl = reader.result;
+      var base64 = dataUrl.split(',')[1];
+      google.script.run
+        .withSuccessHandler(function(result) {
+          var urlField = document.getElementById(kind === 'profile' ? 'f_profileUrl' : 'f_coverUrl');
+          urlField.value = result.url;
+          syncPreview(kind);
+          statusEl.textContent = 'Uploaded ✔';
+          statusEl.className = 'upload-status ok';
+        })
+        .withFailureHandler(function(e) {
+          statusEl.textContent = 'Upload failed: ' + (e && e.message ? e.message : e);
+          statusEl.className = 'upload-status err';
+        })
+        .adminUploadPhoto(base64, file.type, file.name);
+    };
+    reader.onerror = function() {
+      statusEl.textContent = 'Could not read that file.';
+      statusEl.className = 'upload-status err';
+    };
+    reader.readAsDataURL(file);
+    input.value = '';
+  }
+
   function loadList() {
     google.script.run.withSuccessHandler(function(data) {
       cards = data;
@@ -235,6 +308,10 @@
     updateSwatch();
     document.getElementById('f_profileUrl').value = c.profileUrl || '';
     document.getElementById('f_coverUrl').value = c.coverUrl || '';
+    document.getElementById('profileUploadStatus').textContent = '';
+    document.getElementById('coverUploadStatus').textContent = '';
+    syncPreview('profile');
+    syncPreview('cover');
     document.getElementById('f_active').checked = boolOf(c.active);
     document.getElementById('f_phone').value = c.phone || '';
     document.getElementById('f_showPhone').checked = boolOf(c.showPhone);
@@ -261,6 +338,10 @@
     document.getElementById('idHint').textContent = 'Pick a short id, letters/numbers only, e.g. "riesan". Cannot be changed after saving.';
     document.getElementById('f_theme').value = 'classic';
     updateSwatch();
+    document.getElementById('profileUploadStatus').textContent = '';
+    document.getElementById('coverUploadStatus').textContent = '';
+    syncPreview('profile');
+    syncPreview('cover');
     document.getElementById('f_active').checked = true;
     document.getElementById('f_showPhone').checked = true;
     document.getElementById('f_showViber').checked = true;
