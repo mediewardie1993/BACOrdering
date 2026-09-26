@@ -5,5 +5,8 @@
   "description": "Browser-based restaurant and cafe ordering app prototype",
   "scripts": {
     "start": "node server.js"
+  },
+  "dependencies": {
+    "@supabase/server": "^1.8.0"
   }
 }
