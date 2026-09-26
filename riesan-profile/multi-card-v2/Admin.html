@@ -17,14 +17,23 @@
   .btn-secondary { background:var(--pink-soft); color:var(--red-deep); }
   .btn-danger { background:#ffe0e0; color:#c62828; }
   .list { display:grid; gap:10px; margin-bottom:20px; }
-  .row { background:#fff; border-radius:14px; padding:12px 16px; display:flex; justify-content:space-between; align-items:center;
+  .row { background:#fff; border-radius:14px; padding:10px 14px; display:flex; align-items:center; gap:12px;
     box-shadow:0 4px 14px rgba(230,62,98,.08); cursor:pointer; }
   .row.inactive { opacity:.55; }
+  .row .thumb { width:44px; height:44px; border-radius:50%; object-fit:cover; flex-shrink:0; background:var(--pink-soft); }
+  .row .thumb-fallback { width:44px; height:44px; border-radius:50%; flex-shrink:0; display:grid; place-items:center;
+    color:#fff; font-weight:700; font-size:1rem; }
+  .row .info { flex:1; min-width:0; }
+  .row .name-line { display:flex; align-items:center; gap:6px; }
   .row .name { font-weight:600; }
   .row .id { color:var(--muted); font-size:.8rem; }
-  .badge { font-size:.7rem; padding:3px 8px; border-radius:999px; font-weight:600; }
+  .row .roles { color:var(--muted); font-size:.78rem; margin-top:2px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .row .theme-dot { width:10px; height:10px; border-radius:50%; flex-shrink:0; border:1px solid rgba(0,0,0,.1); }
+  .row .chev { color:var(--muted); font-size:1.1rem; flex-shrink:0; }
+  .badge { font-size:.7rem; padding:3px 8px; border-radius:999px; font-weight:600; flex-shrink:0; }
   .badge.on { background:#e3fbe8; color:#1a8a3d; }
   .badge.off { background:#f1f1f1; color:#888; }
+  .search { width:100%; padding:10px 14px; border-radius:12px; border:1px solid #f0d3da; font-family:inherit; font-size:.9rem; margin-bottom:12px; background:#fff; }
 
   .panel { background:#fff; border-radius:16px; padding:18px; box-shadow:0 6px 20px rgba(230,62,98,.1); }
   .field { margin-bottom:12px; }
@@ -65,6 +74,7 @@
     <div class="toolbar">
       <button class="btn-primary" onclick="newCard()">+ New Card</button>
     </div>
+    <input type="text" class="search" id="searchBox" placeholder="Search by name or id…" oninput="renderList()">
     <div class="list" id="cardList">Loading…</div>
   </div>
 
@@ -165,18 +175,46 @@
     }).withFailureHandler(showErr).adminListCards();
   }
 
+  function themeSwatchFor(key) {
+    var t = THEMES.filter(function(x){ return x.key === key; })[0];
+    return t ? t.swatch : THEMES[0].swatch;
+  }
+
+  function initials(name) {
+    var parts = String(name || '?').trim().split(/\s+/);
+    return ((parts[0]||'')[0] || '') + ((parts.length>1 ? parts[parts.length-1][0] : '') || '');
+  }
+
   function renderList() {
     var el = document.getElementById('cardList');
+    var q = (document.getElementById('searchBox').value || '').toLowerCase().trim();
+    var filtered = cards.filter(function(c) {
+      if (!q) return true;
+      return (c.name||'').toLowerCase().indexOf(q) > -1 || (c.id||'').toLowerCase().indexOf(q) > -1;
+    });
     if (!cards.length) { el.innerHTML = '<p class="muted">No cards yet. Tap "+ New Card" to add one.</p>'; return; }
+    if (!filtered.length) { el.innerHTML = '<p class="muted">No matches for "' + escapeHtml(q) + '".</p>'; return; }
     el.innerHTML = '';
-    cards.forEach(function(c) {
+    filtered.forEach(function(c) {
       var active = (c.active === true || c.active === 'TRUE' || c.active === 'true');
+      var swatch = themeSwatchFor(c.theme);
       var row = document.createElement('div');
       row.className = 'row' + (active ? '' : ' inactive');
       row.onclick = function() { openCard(c.id); };
+
+      var thumbHtml = c.profileUrl
+        ? '<img class="thumb" src="' + escapeHtml(c.profileUrl) + '" onerror="this.style.display=\'none\'">'
+        : '<div class="thumb-fallback" style="background:' + swatch + '">' + escapeHtml(initials(c.name)) + '</div>';
+
       row.innerHTML =
-        '<div><div class="name">' + escapeHtml(c.name || '(no name)') + '</div><div class="id">id: ' + escapeHtml(c.id) + '</div></div>' +
-        '<span class="badge ' + (active ? 'on' : 'off') + '">' + (active ? 'ACTIVE' : 'OFF') + '</span>';
+        thumbHtml +
+        '<div class="info">' +
+          '<div class="name-line"><span class="theme-dot" style="background:' + swatch + '"></span><span class="name">' + escapeHtml(c.name || '(no name)') + '</span></div>' +
+          '<div class="roles">' + escapeHtml(c.roles || '') + '</div>' +
+          '<div class="id">id: ' + escapeHtml(c.id) + '</div>' +
+        '</div>' +
+        '<span class="badge ' + (active ? 'on' : 'off') + '">' + (active ? 'ACTIVE' : 'OFF') + '</span>' +
+        '<span class="chev">›</span>';
       el.appendChild(row);
     });
   }
