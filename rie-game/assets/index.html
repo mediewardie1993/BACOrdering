@@ -1,0 +1,536 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<title>Rie's Story</title>
+<style>
+:root{--bg:#fff4ec;--card:#ffffff;--ink:#3b2a24;--muted:#8a6f63;--accent:#c2364b;--gold:#d4a23a;--hair:#6b3a22;--ok:#3f9d5a}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent;user-select:none}
+html,body{margin:0;height:100%;background:var(--bg);color:var(--ink);font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;overflow:hidden}
+#app{position:fixed;inset:0;display:flex;flex-direction:column}
+.screen{flex:1;display:flex;flex-direction:column;overflow-y:auto;padding:16px}
+h1{font-size:28px;margin:8px 0 4px;color:var(--accent)}
+h2{font-size:20px;margin:6px 0}
+p{line-height:1.45}
+.btn{display:block;width:100%;padding:14px;margin:8px 0;border:0;border-radius:14px;background:var(--accent);color:#fff;font-size:17px;font-weight:600;box-shadow:0 3px 0 #8e2032}
+.btn:active{transform:translateY(2px);box-shadow:0 1px 0 #8e2032}
+.btn.alt{background:#fff;color:var(--accent);border:2px solid var(--accent);box-shadow:none}
+.btn.small{padding:10px;font-size:15px}
+.btn[disabled]{opacity:.45}
+.hud{display:flex;align-items:center;gap:10px;padding:10px 12px;background:#2b1d19;color:#fff}
+.hud img{width:44px;height:44px;border-radius:50%;object-fit:cover;object-position:50% 18%;border:2px solid var(--gold)}
+.hud .stat{font-size:13px;opacity:.85}
+.hud b{font-size:16px}
+.bar{height:8px;background:#ffffff33;border-radius:5px;overflow:hidden;margin-top:3px}
+.bar i{display:block;height:100%;background:var(--gold)}
+.mission{display:flex;align-items:center;gap:12px;background:var(--card);border-radius:14px;padding:12px;margin:7px 0;box-shadow:0 2px 6px #0001;border:2px solid transparent}
+.mission .ic{font-size:30px;width:40px;text-align:center}
+.mission .t{flex:1}
+.mission .t small{color:var(--muted);display:block}
+.mission.done{opacity:.55}
+.mission.done .ic::after{content:"✔";color:var(--ok);font-size:18px;position:relative;left:-6px;top:10px}
+.mission.gig{border-color:var(--gold)}
+.portrait{width:150px;height:150px;border-radius:50%;object-fit:cover;object-position:50% 15%;border:5px solid var(--gold);display:block;margin:10px auto;box-shadow:0 6px 18px #0002}
+/* dialogue */
+.scene{flex:1;position:relative;background:linear-gradient(#ffe2cf,#fff4ec)}
+.scene .who{position:absolute;bottom:200px;left:0;right:0;display:flex;justify-content:center;align-items:flex-end}
+.dbox{position:absolute;left:10px;right:10px;bottom:12px;min-height:170px;background:#fff;border-radius:16px;padding:14px;box-shadow:0 4px 14px #0002;border:3px solid var(--ink)}
+.dbox .name{display:inline-block;background:var(--ink);color:#fff;padding:3px 10px;border-radius:8px;font-weight:700;margin-bottom:6px}
+.dbox .txt{font-size:17px;line-height:1.4;min-height:60px}
+.dbox .tap{position:absolute;right:14px;bottom:8px;font-size:12px;color:var(--muted)}
+.choices .btn{font-size:15px;padding:11px;margin:6px 0}
+.avatar{width:120px;height:120px;border-radius:50%;object-fit:cover;object-position:50% 15%;border:4px solid #fff;box-shadow:0 4px 12px #0003}
+/* minigames */
+.arena{flex:1;position:relative;overflow:hidden;background:#fff;border-radius:16px;margin-top:8px;box-shadow:inset 0 0 0 2px #0001}
+.topline{display:flex;justify-content:space-between;font-weight:700}
+.item{position:absolute;font-size:42px;width:60px;height:60px;display:flex;align-items:center;justify-content:center;transition:transform .1s}
+.item:active{transform:scale(.85)}
+.list{background:#fff7d6;border-radius:10px;padding:8px 10px;font-size:15px;margin-top:6px}
+.list s{color:var(--ok)}
+.lane{position:absolute;top:0;bottom:0;width:33.33%;border-right:1px dashed #0002}
+.note{position:absolute;width:20%;height:44px;margin-left:6.66%;border-radius:12px;background:var(--accent);color:#fff;display:flex;align-items:center;justify-content:center;font-size:22px}
+.hitline{position:absolute;left:0;right:0;bottom:90px;height:4px;background:var(--gold)}
+.pads{position:absolute;left:0;right:0;bottom:0;height:84px;display:flex}
+.pads div{flex:1;margin:6px;border-radius:14px;background:#2b1d19;color:#fff;display:flex;align-items:center;justify-content:center;font-size:26px}
+.pads div:active{background:var(--gold)}
+.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;padding:10px}
+.tile{background:#fff;border-radius:14px;padding:14px 4px;text-align:center;font-size:38px;box-shadow:0 2px 6px #0002}
+.tile small{display:block;font-size:12px;color:var(--muted)}
+.tile.good{background:#dff3e4}.tile.bad{background:#fbd9dc}
+.toast{position:fixed;left:50%;top:80px;transform:translateX(-50%);background:#2b1d19;color:#fff;padding:10px 16px;border-radius:12px;font-weight:600;z-index:9;transition:opacity .4s}
+.float{position:absolute;font-weight:800;color:var(--ok);pointer-events:none;animation:up .7s forwards}
+@keyframes up{to{transform:translateY(-40px);opacity:0}}
+.cloud{position:absolute;font-size:46px;transition:opacity .4s, transform .4s}
+.center{text-align:center}
+</style>
+</head>
+<body>
+<div id="app"></div>
+<script>
+// ---------- Rie sprite (long brown hair, black floral sundress, gold hoops & necklace) ----------
+function rieSVG(size, mood){
+  const smile = mood==='sad' ? 'M88 122 Q100 114 112 122' : 'M84 116 Q100 132 116 116';
+  let flowers='';
+  const pts=[[70,200],[95,215],[125,205],[80,235],[110,240],[135,228],[65,262],[100,265],[130,258],[88,288],[118,290]];
+  pts.forEach(([x,y])=>flowers+=`<circle cx="${x}" cy="${y}" r="4" fill="#c2364b"/><circle cx="${x+3}" cy="${y-3}" r="1.6" fill="#5b7a3c"/>`);
+  return `<svg width="${size}" height="${size*1.5}" viewBox="0 0 200 300">
+  <path d="M46 70 Q40 20 100 18 Q160 20 154 70 L166 190 Q150 215 134 190 L130 120 L70 120 L66 190 Q50 215 34 190 Z" fill="#6b3a22"/>
+  <rect x="88" y="138" width="24" height="26" fill="#f0b896"/>
+  <path d="M40 300 L48 182 Q60 160 88 158 L112 158 Q140 160 152 182 L160 300 Z" fill="#f0b896"/>
+  <path d="M58 300 L62 196 Q100 186 138 196 L142 300 Z" fill="#141010"/>
+  <path d="M60 196 Q70 188 80 196 Q90 188 100 196 Q110 188 120 196 Q130 188 140 196" stroke="#141010" stroke-width="5" fill="none"/>
+  <rect x="68" y="160" width="7" height="40" fill="#141010" transform="rotate(-6 70 180)"/>
+  <rect x="125" y="160" width="7" height="40" fill="#141010" transform="rotate(6 128 180)"/>
+  ${flowers}
+  <path d="M80 160 Q100 192 120 160" stroke="#d4a23a" stroke-width="2.5" fill="none"/>
+  <path d="M84 160 Q100 182 116 160" stroke="#d4a23a" stroke-width="1.6" fill="none"/>
+  <rect x="97" y="181" width="6" height="9" rx="1" fill="#d4a23a"/>
+  <ellipse cx="100" cy="95" rx="40" ry="48" fill="#f3c2a2"/>
+  <path d="M58 82 Q60 40 100 38 Q150 40 146 92 Q130 60 104 54 Q80 70 58 82Z" fill="#6b3a22"/>
+  <circle cx="60" cy="104" r="7" fill="none" stroke="#d4a23a" stroke-width="3"/>
+  <circle cx="61" cy="94" r="2" fill="#d4a23a"/>
+  <path d="M76 82 Q86 76 94 82" stroke="#4a2a1a" stroke-width="3" fill="none"/>
+  <path d="M106 82 Q114 76 124 82" stroke="#4a2a1a" stroke-width="3" fill="none"/>
+  <ellipse cx="85" cy="95" rx="6" ry="7" fill="#3a2016"/><ellipse cx="115" cy="95" rx="6" ry="7" fill="#3a2016"/>
+  <circle cx="87" cy="93" r="2" fill="#fff"/><circle cx="117" cy="93" r="2" fill="#fff"/>
+  <path d="M77 90 L72 87" stroke="#2a1a14" stroke-width="2"/><path d="M123 90 L128 87" stroke="#2a1a14" stroke-width="2"/>
+  <ellipse cx="76" cy="110" rx="7" ry="4" fill="#f29b8f" opacity=".5"/><ellipse cx="124" cy="110" rx="7" ry="4" fill="#f29b8f" opacity=".5"/>
+  <path d="${smile}" stroke="#b5434e" stroke-width="4" fill="${mood==='sad'?'none':'#fff'}" stroke-linecap="round"/>
+  <path d="M146 92 Q156 140 150 190 L140 186 Q144 140 138 100Z" fill="#6b3a22"/>
+  </svg>`;
+}
+// Other characters as simple avatars
+const CAST={
+  rie:{name:'Rie',color:'#c2364b',img:'rie.jpg'},
+  mom:{name:'Mama',color:'#7a5a9e',emoji:'👩🏻‍🦳'},
+  joy:{name:'Ate Joy',color:'#d97a2b',emoji:'👩🏻'},
+  lyn:{name:'Ate Lyn',color:'#2b8a8a',emoji:'👩🏻‍🦱'},
+  migo:{name:'Migo',color:'#3a7bd5',emoji:'👦🏻'},
+  pao:{name:'Pao',color:'#5aa04a',emoji:'🧒🏻'},
+  bea:{name:'Bea',color:'#6d7fa8',emoji:'😢'},
+  manager:{name:'Sir Dante',color:'#444',emoji:'🧔🏻'},
+  vendor:{name:'Aling Nena',color:'#a0522d',emoji:'👵🏻'},
+  ghost:{name:'Old Memory',color:'#555',emoji:'🎭'},
+};
+function avatarHTML(id,mood){
+  const c=CAST[id];
+  if(id==='rie') return `<div>${rieSVG(130,mood)}</div>`;
+  return `<div style="width:130px;height:130px;border-radius:50%;background:${c.color};display:flex;align-items:center;justify-content:center;font-size:76px;border:5px solid #fff;box-shadow:0 4px 12px #0003;margin-bottom:30px">${c.emoji}</div>`;
+}
+
+// ---------- State ----------
+const GOAL=15000, DAYS=5;
+const DEFAULT={day:1,money:2500,energy:100,heart:50,done:{},friend:0,letgo:0,gigsToday:0,flags:{},seenIntro:false};
+let S=load();
+function load(){try{const s=JSON.parse(localStorage.getItem('rie_save'));if(s&&s.day)return s;}catch(e){}return JSON.parse(JSON.stringify(DEFAULT));}
+function save(){try{localStorage.setItem('rie_save',JSON.stringify(S));}catch(e){}}
+const $=s=>document.querySelector(s);
+const app=$('#app');
+let timers=[];
+function clearTimers(){timers.forEach(t=>{clearInterval(t);clearTimeout(t);cancelAnimationFrame(t)});timers=[];}
+function toast(msg){const t=document.createElement('div');t.className='toast';t.textContent=msg;document.body.appendChild(t);setTimeout(()=>t.style.opacity=0,1400);setTimeout(()=>t.remove(),1900);}
+const peso=n=>'₱'+n.toLocaleString();
+let backHandler=null; window.onBack=()=>{ if(backHandler) backHandler(); };
+
+// ---------- Sound (tiny synth) ----------
+let AC=null;
+function beep(f=660,d=.08,type='sine',v=.15){try{AC=AC||new (window.AudioContext||window.webkitAudioContext)();const o=AC.createOscillator(),g=AC.createGain();o.type=type;o.frequency.value=f;g.gain.value=v;o.connect(g);g.connect(AC.destination);o.start();g.gain.exponentialRampToValueAtTime(.001,AC.currentTime+d);o.stop(AC.currentTime+d);}catch(e){}}
+
+// ---------- Missions ----------
+const CHORES=[
+  {id:'school1',ic:'🏫',name:'Bring Migo to school',sub:'St. Jude Elementary — across town',cost:10},
+  {id:'school2',ic:'🎒',name:'Bring Pao to school',sub:'Little Stars Preschool — other side!',cost:10},
+  {id:'market',ic:'🧺',name:'Go to the market',sub:'Buy everything on Mama\'s list',cost:10},
+  {id:'prep',ic:'🍳',name:'Prep the food',sub:'Cook in the right order',cost:8},
+  {id:'dishes',ic:'🍽️',name:'Wash the dishes',sub:'Scrub every plate clean',cost:8},
+  {id:'laundry',ic:'👕',name:'Wash the clothes',sub:'Sort whites and colors',cost:10},
+];
+function heartMission(){return {id:'friend',ic:'💌',name:'Check on Bea',sub:'Your friend is going through a hard time',cost:8};}
+function letgoMission(){return {id:'letgo',ic:'🕊️',name:'Let go of the past',sub:'Free yourself from the people who deceived you',cost:8};}
+const GIG_INFO=[
+  null,
+  {venue:'Kanto Café acoustic night',pay:1800},
+  {venue:'Wedding reception at Villa Rosa',pay:3200},
+  {venue:'Hotel lounge — 3 sets',pay:3000},
+  {venue:'Mall Christmas fair stage',pay:3500},
+  {venue:'Fiesta concert — headliner!',pay:4500},
+];
+
+// ---------- Screens ----------
+function title(){
+  clearTimers();backHandler=null;
+  app.innerHTML=`<div class="screen center" style="justify-content:center">
+    <img class="portrait" src="rie.jpg">
+    <h1>Rie's Story</h1>
+    <p style="color:var(--muted);margin-top:0">Sing. Work. Love. Let go.</p>
+    <p>Help Rie earn <b>${peso(GOAL)}</b> in ${DAYS} days to support her family — while finishing <b>all</b> the house chores, being there for a friend, and finally letting go of the people who hurt her.</p>
+    <button class="btn" id="go">${S.seenIntro?'Continue — Day '+S.day:'Start Story'}</button>
+    ${S.seenIntro?'<button class="btn alt" id="new">New Game</button>':''}
+  </div>`;
+  $('#go').onclick=()=>{ if(!S.seenIntro){S.seenIntro=true;save();dialogue(INTRO,startDay);} else hub(); };
+  if($('#new')) $('#new').onclick=()=>{ if(confirm('Start over? Progress will be lost.')){S=JSON.parse(JSON.stringify(DEFAULT));save();title();} };
+}
+
+function startDay(){
+  const intro=DAY_OPEN[S.day];
+  if(intro && !S.flags['open'+S.day]){ S.flags['open'+S.day]=true; save(); dialogue(intro,hub); } else hub();
+}
+
+function hub(){
+  clearTimers(); backHandler=title;
+  const list=[...CHORES, heartMission(), letgoMission()];
+  const gig=GIG_INFO[S.day];
+  const choresLeft=CHORES.filter(c=>!S.done[c.id]).length;
+  const pct=Math.min(100,Math.round(S.money/GOAL*100));
+  app.innerHTML=`
+  <div class="hud"><img src="rie.jpg"><div style="flex:1">
+    <b>Day ${S.day}/${DAYS}</b> · <span class="stat">💰 ${peso(S.money)} / ${peso(GOAL)}</span>
+    <div class="bar"><i style="width:${pct}%"></i></div>
+    <span class="stat">⚡ Energy ${S.energy} · ❤️ Heart ${S.heart}</span></div></div>
+  <div class="screen">
+    <div style="display:flex;gap:12px;align-items:center">${rieSVG(70,S.energy<25?'sad':'')}<div><h2>Today's missions</h2><small style="color:var(--muted)">${choresLeft? choresLeft+' chores left — Mama is counting on you!':'All chores done! 🎉'}</small></div></div>
+    <div class="mission gig" data-id="gig"><div class="ic">🎤</div><div class="t"><b>Singing gig: ${gig.venue}</b><small>${S.done.gig?'Performed tonight ✔':'Up to '+peso(gig.pay)+' · Energy -20'}</small></div></div>
+    ${list.map(m=>`<div class="mission ${S.done[m.id]?'done':''}" data-id="${m.id}"><div class="ic">${m.ic}</div><div class="t"><b>${m.name}</b><small>${m.sub} · ⚡-${m.cost}</small></div></div>`).join('')}
+    <button class="btn" id="sleep">🌙 End the day</button>
+  </div>`;
+  app.querySelectorAll('.mission').forEach(el=>el.onclick=()=>{
+    const id=el.dataset.id;
+    if(S.done[id]){toast('Already done today!');return;}
+    const m=id==='gig'?{cost:20}:list.find(x=>x.id===id);
+    if(S.energy<m.cost){toast('Too tired… rest by ending the day.');return;}
+    if(id==='gig') return gigIntro();
+    if(id==='friend') return friendScene();
+    if(id==='letgo') return letgoScene();
+    GAMES[id]();
+  });
+  $('#sleep').onclick=endDay;
+}
+
+function finish(id, cost, msg, money=0, heart=0){
+  S.done[id]=true; S.energy=Math.max(0,S.energy-cost); S.money+=money; S.heart=Math.max(0,Math.min(100,S.heart+heart)); save();
+  resultScreen(msg, money);
+}
+function resultScreen(msg,money){
+  clearTimers();
+  app.innerHTML=`<div class="screen center" style="justify-content:center">${rieSVG(140,'')}<h2>${msg}</h2>${money?`<p style="font-size:22px;color:var(--ok)"><b>+${peso(money)}</b></p>`:''}<button class="btn" id="ok">Back to missions</button></div>`;
+  beep(880,.15);setTimeout(()=>beep(1175,.2),120);
+  $('#ok').onclick=hub;
+}
+
+function endDay(){
+  const left=CHORES.filter(c=>!S.done[c.id]);
+  const goSleep=()=>{
+    const missed=left.length;
+    if(missed){ S.heart=Math.max(0,S.heart-5*missed); S.flags.missed=(S.flags.missed||0)+missed; }
+    S.flags['chores'+S.day]=missed===0;
+    if(S.day>=DAYS){ save(); return ending(); }
+    S.day++; S.energy=100; S.done={}; save();
+    const lines=[{who:'mom',t: missed? `Anak, ${missed} chore${missed>1?'s were':' was'} left undone today… but rest now. Bukas ulit.` : 'Salamat, anak. The house is spotless. Matulog ka na, you did so well today.'}];
+    dialogue(lines, startDay);
+  };
+  if(left.length){
+    app.innerHTML=`<div class="screen center" style="justify-content:center"><h2>Not all chores are done!</h2><p>${left.map(l=>l.ic+' '+l.name).join('<br>')}</p><p>Mama really needs ALL chores finished. End the day anyway?</p><button class="btn alt" id="b">Go back</button><button class="btn" id="s">Sleep anyway</button></div>`;
+    $('#b').onclick=hub; $('#s').onclick=goSleep;
+  } else goSleep();
+}
+
+// ---------- Dialogue engine ----------
+// line: {who, t, mood, choices:[{t, fx:fn, next:[lines]}]}
+function dialogue(lines, done){
+  clearTimers(); let i=0; backHandler=null;
+  const queue=[...lines];
+  function show(){
+    if(i>=queue.length){ return done&&done(); }
+    const L=queue[i]; const c=CAST[L.who];
+    app.innerHTML=`<div class="scene">
+      <div class="who">${avatarHTML(L.who,L.mood)}</div>
+      <div class="dbox"><span class="name" style="background:${c.color}">${c.name}</span>
+        <div class="txt"></div>
+        <div class="choices"></div>
+        ${L.choices?'':'<div class="tap">tap ▶</div>'}
+      </div></div>`;
+    const txt=app.querySelector('.txt'); let k=0; let typing=true;
+    const full=L.t;
+    const tm=setInterval(()=>{ k+=2; txt.textContent=full.slice(0,k); if(k>=full.length){clearInterval(tm);typing=false;showChoices();} },22); timers.push(tm);
+    function showChoices(){
+      if(!L.choices) return;
+      const box=app.querySelector('.choices');
+      L.choices.forEach(ch=>{const b=document.createElement('button');b.className='btn alt';b.textContent=ch.t;b.onclick=e=>{e.stopPropagation();beep(520);if(ch.fx)ch.fx();if(ch.next)queue.splice(i+1,0,...ch.next);i++;show();};box.appendChild(b);});
+    }
+    app.querySelector('.scene').onclick=()=>{
+      if(typing){clearInterval(tm);txt.textContent=full;typing=false;showChoices();return;}
+      if(L.choices) return;
+      beep(440,.04); i++; show();
+    };
+  }
+  show();
+}
+
+// ---------- Story ----------
+const INTRO=[
+  {who:'rie',t:'Another morning in our little house. Papa\'s been gone a long time now… so it\'s Mama, my two Ates, my nephews, and me.'},
+  {who:'mom',t:'Rie, anak! Gising na. The rent is due at the end of the week — ₱15,000. I don\'t know how we\'ll make it.'},
+  {who:'rie',t:'Don\'t worry, Ma. I booked singing gigs every night this week. We\'ll make it, promise.'},
+  {who:'joy',t:'Rie, I have early shift at the hospital again. Can you bring Migo to St. Jude? And Pao to Little Stars?'},
+  {who:'lyn',t:'And since I\'m doing overtime at the call center… the laundry, dishes, market and cooking… pasensya na, bunso. 🙏'},
+  {who:'rie',t:'Two schools on opposite ends of town, all the chores, AND a gig every night? …Kaya ko \'to. I can do this.'},
+  {who:'mom',t:'One more thing, anak. Bea called. She sounded like she was crying.'},
+  {who:'rie',mood:'sad',t:'Bea… I\'ll check on her. And honestly, Ma — I need to stop thinking about the people who lied to me. They don\'t deserve space in my head anymore.'},
+  {who:'mom',t:'That\'s my girl. One step at a time. Lord will provide. Kain ka muna bago umalis!'},
+];
+const DAY_OPEN={
+  2:[{who:'migo',t:'Tita Rie! Can you sing the song from last night on the way to school?'},{who:'pao',t:'Me too! Me too! 🎵'},{who:'rie',t:'Okay okay — but only if you two don\'t run off at the crossing!'}],
+  3:[{who:'joy',t:'Bunso, you look tired. Here — I made you coffee. Thank you for everything with the boys.'},{who:'rie',t:'Salamat, Ate Joy. Halfway there… I can feel it.'},{who:'lyn',t:'I heard the wedding crowd loved you! Someone posted your video. 😍'}],
+  4:[{who:'mom',t:'Anak, I counted what you\'ve given so far. I\'m so proud of you. Don\'t forget to rest, ha?'},{who:'rie',t:'Two more days, Ma. Then we\'re safe.'}],
+  5:[{who:'lyn',t:'Last day! The fiesta concert is TONIGHT. Ate Joy and I will be in the front row!'},{who:'joy',t:'We\'ll bring the boys. Mama too. Show them what our Rie can do!'},{who:'rie',t:'Okay… deep breath. Chores first, then the biggest stage of my life.'}],
+};
+
+// Friend storyline (5 parts)
+const FRIEND=[
+  ()=>[
+    {who:'bea',t:'Rie… sorry for calling so early. Marco left. Three years, and he just… left.'},
+    {who:'rie',mood:'sad',t:'Oh, Bea…',choices:[
+      {t:'"I\'m here. Tell me everything."',fx:()=>S.friend+=2,next:[{who:'bea',t:'Thank you… I just needed someone to listen. 😭'}]},
+      {t:'"Forget him, there are better guys."',fx:()=>S.friend+=1,next:[{who:'bea',t:'I know… it\'s just too soon to hear that.'}]},
+    ]},
+    {who:'rie',t:'I\'ll come back tomorrow, okay? With pandesal.'},
+  ],
+  ()=>[
+    {who:'bea',t:'I haven\'t left my room in two days. I feel so stupid for trusting him.'},
+    {who:'rie',t:'You\'re not stupid. Trusting people is brave. I know because… I trusted the wrong people too.',choices:[
+      {t:'Share your own story with her',fx:()=>{S.friend+=2;S.letgo+=1;},next:[{who:'rie',mood:'sad',t:'People I called friends used my name and took money from my gigs. It hurt. But I\'m still standing.'},{who:'bea',t:'Rie… I never knew. You always smile.'}]},
+      {t:'Just hug her',fx:()=>S.friend+=1,next:[{who:'bea',t:'…That helps. Thank you.'}]},
+    ]},
+  ],
+  ()=>[
+    {who:'rie',t:'Get dressed! We\'re going for a walk. Just to the corner, for halo-halo.'},
+    {who:'bea',t:'…Fine. Only because it\'s halo-halo.',choices:[
+      {t:'Make her laugh with a silly song',fx:()=>S.friend+=2,next:[{who:'bea',t:'Hahaha! Stop! People are looking! …Okay, don\'t stop.'}]},
+      {t:'Walk quietly together',fx:()=>S.friend+=1,next:[{who:'bea',t:'This is nice. The air feels lighter.'}]},
+    ]},
+  ],
+  ()=>[
+    {who:'bea',t:'I deleted his photos today. I cried, but then I made breakfast for myself. Small win?'},
+    {who:'rie',t:'HUGE win. I\'m so proud of you, Bea!',choices:[
+      {t:'Invite her to your fiesta concert',fx:()=>{S.friend+=2;S.flags.beaConcert=true;},next:[{who:'bea',t:'I\'ll be there. Front row, beside your Ates!'}]},
+      {t:'Tell her to keep going, one day at a time',fx:()=>S.friend+=1,next:[{who:'bea',t:'One day at a time. Got it.'}]},
+    ]},
+  ],
+  ()=>[
+    {who:'bea',t:'Rie, you carried your whole family this week, and you STILL showed up for me every single day.'},
+    {who:'bea',t:'I\'m okay now. Really. Thank you for not giving up on me. 💛'},
+    {who:'rie',t:'That\'s what friends do. Real ones.'},
+  ],
+];
+function friendScene(){
+  const part=FRIEND[Math.min(S.day,5)-1]();
+  dialogue(part,()=>finish('friend',8,'Bea feels a little better 💛',0,8));
+}
+
+// Letting-go storyline: dialogue + "release the clouds" mini-game
+const LETGO=[
+  {intro:[{who:'ghost',t:'(A message pops up from an old "friend") — "Rie, can you lend me money again? You owe me, remember?"'},{who:'rie',mood:'sad',t:'I don\'t owe you anything. Not anymore.'}],words:['Lies','Guilt','"You owe me"','Broken promise','Fake smile']},
+  {intro:[{who:'rie',mood:'sad',t:'I scrolled past their photos again. Smiling, like nothing happened.'},{who:'lyn',t:'Bunso, block them. Your peace is worth more than their approval.'}],words:['Their photos','What-ifs','Regret','Overthinking','Old chats']},
+  {intro:[{who:'ghost',t:'(Someone at the café whispers) — "Isn\'t that the girl they scammed? Haha."'},{who:'joy',t:'Ignore them, Rie. Sing louder. Let your voice answer for you.'}],words:['Gossip','Shame','Embarrassment','Their laughter','Doubt']},
+  {intro:[{who:'mom',t:'Anak, forgiving them doesn\'t mean they were right. It means you\'re free.'},{who:'rie',t:'I think… I\'m ready, Ma.'}],words:['Anger','Resentment','Bitterness','Revenge','Hurt']},
+  {intro:[{who:'rie',t:'Today I let go of the last of it. I wish them well — far away from me.'},{who:'ghost',t:'(The old memories feel lighter… like clouds clearing.)'}],words:['The past','Their names','Fear of trusting','Old pain','Goodbye']},
+];
+function letgoScene(){
+  const L=LETGO[Math.min(S.day,5)-1];
+  dialogue([...L.intro,{who:'rie',t:'Tap each dark cloud to release it. 🕊️'}],()=>{
+    clearTimers();
+    app.innerHTML=`<div class="screen"><div class="topline"><span>🕊️ Let go</span><span id="c">0/${L.words.length}</span></div><div class="arena" id="ar" style="background:linear-gradient(#b8c6db,#f5f7fa)"></div></div>`;
+    const ar=$('#ar'); let n=0;
+    L.words.forEach((w,j)=>{
+      const d=document.createElement('div'); d.className='cloud';
+      d.innerHTML=`<div style="background:#556;color:#fff;padding:14px 18px;border-radius:30px;font-size:16px;box-shadow:0 4px 10px #0003">☁️ ${w}</div>`;
+      d.style.left=(4+Math.random()*30)+'%'; d.style.top=(6+j*17)+'%';
+      d.onclick=()=>{ if(d.dataset.g)return; d.dataset.g=1; beep(700+j*120,.25,'triangle'); d.innerHTML='<div style="font-size:40px">🕊️</div>'; d.style.transform='translateY(-120px)'; d.style.opacity=0; n++; $('#c').textContent=n+'/'+L.words.length;
+        if(n===L.words.length){ S.letgo+=2; setTimeout(()=>finish('letgo',8,'You feel lighter. They no longer control your peace.',0,10),700);} };
+      ar.appendChild(d);
+    });
+  });
+}
+
+// ---------- Mini-games ----------
+const GAMES={};
+
+// Schools: guide each nephew to the RIGHT school with quick route choices
+function schoolGame(id){
+  const kid=id==='school1'?'migo':'pao';
+  const school=id==='school1'?'St. Jude Elementary':'Little Stars Preschool';
+  const intro=id==='school1'
+    ?[{who:'migo',t:'Tita, I can\'t be late! Teacher said there\'s a quiz today!'},{who:'rie',t:'Hold my hand, we\'ll take the jeep to St. Jude.'}]
+    :[{who:'pao',t:'Tita Rie, carry me? My legs are sleepy.'},{who:'rie',t:'Haha, okay — Little Stars, here we come!'}];
+  dialogue(intro,()=>{
+    clearTimers();
+    const steps=[
+      {q:'Which ride gets there fastest?',opts:[['🚌','Jeepney',1],['🛺','Tricycle',1],['🚶','Walk',0]]},
+      {q:'Traffic ahead! What now?',opts:[['↪️','Shortcut alley',1],['⏳','Wait in traffic',0],['🔙','Go back home',0]]},
+      {q:'Which building is '+school+'?',opts:id==='school1'?[['⛪','St. Jude Elementary',1],['🌟','Little Stars Preschool',0],['🏬','Mall',0]]:[['⛪','St. Jude Elementary',0],['🌟','Little Stars Preschool',1],['🏥','Hospital',0]]},
+    ];
+    let s=0,score=0,time=20;
+    function render(){
+      const st=steps[s];
+      app.innerHTML=`<div class="screen"><div class="topline"><span>${CAST[kid].emoji} To ${school}</span><span>⏱ <span id="t">${time}</span>s</span></div>
+      <h2 style="margin-top:14px">${st.q}</h2><div class="grid">${st.opts.map((o,j)=>`<div class="tile" data-j="${j}">${o[0]}<small>${o[1]}</small></div>`).join('')}</div>
+      <p class="center" style="color:var(--muted)">Step ${s+1} of ${steps.length}</p></div>`;
+      app.querySelectorAll('.tile').forEach(t=>t.onclick=()=>{
+        const o=st.opts[t.dataset.j]; t.classList.add(o[2]?'good':'bad'); beep(o[2]?880:200,.12,o[2]?'sine':'square');
+        if(o[2]){score++; setTimeout(()=>{s++; s<steps.length?render():done();},300);} else {time=Math.max(0,time-4);toast('That cost you time!');}
+      });
+    }
+    const tm=setInterval(()=>{time--; const e=$('#t'); if(e)e.textContent=time; if(time<=0){done();}},1000); timers.push(tm);
+    function done(){ clearTimers(); const ok=s>=steps.length;
+      finish(id,10, ok? `${CAST[kid].name} made it to ${school} on time! 🎒` : `${CAST[kid].name} was a little late… but safe at school.`,0, ok?3:0); }
+    render();
+  });
+}
+GAMES.school1=()=>schoolGame('school1');
+GAMES.school2=()=>schoolGame('school2');
+
+// Market: tap the items on the list, avoid others
+GAMES.market=()=>{
+  const all=['🍅','🥚','🐟','🍚','🧅','🥬','🍗','🧄','🍌','🍞','🥕','🍉','🍬','🥤','🍩','🧃'];
+  const pick=[...all].sort(()=>Math.random()-.5).slice(0,5);
+  dialogue([{who:'vendor',t:'Ay, si Rie! Fresh pa lahat, iha. What does your Mama need today?'},{who:'rie',t:'Mama\'s list: '+pick.join(' ')+' — tap them fast, avoid what\'s not on the list!'}],()=>{
+    clearTimers(); let got=new Set(), time=25, mistakes=0;
+    app.innerHTML=`<div class="screen"><div class="topline"><span>🧺 Market</span><span>⏱ <span id="t">${time}</span>s</span></div><div class="list" id="l"></div><div class="arena" id="ar"></div></div>`;
+    const ar=$('#ar');
+    const drawList=()=>$('#l').innerHTML='List: '+pick.map(p=>got.has(p)?`<s>${p}</s>`:p).join(' ');
+    drawList();
+    function spawn(){
+      const e=document.createElement('div'); e.className='item';
+      const want=Math.random()<.5; const pool=want?pick.filter(p=>!got.has(p)):all.filter(a=>!pick.includes(a));
+      const v=pool[Math.floor(Math.random()*pool.length)]||all[0]; e.textContent=v;
+      e.style.left=Math.random()*(ar.clientWidth-60)+'px'; e.style.top=Math.random()*(ar.clientHeight-60)+'px';
+      e.onclick=()=>{ if(pick.includes(v)&&!got.has(v)){got.add(v);beep(900);drawList(); if(got.size===pick.length)end();} else {mistakes++;beep(180,.15,'square');toast('Not on the list! -₱50');} e.remove(); };
+      ar.appendChild(e); setTimeout(()=>e.remove(),1500);
+    }
+    timers.push(setInterval(spawn,450));
+    timers.push(setInterval(()=>{time--;$('#t').textContent=time;if(time<=0)end();},1000));
+    function end(){ clearTimers(); const ok=got.size===pick.length; S.money=Math.max(0,S.money-50*mistakes);
+      finish('market',10, ok?'Got everything on the list! Aling Nena gave you a discount 🥬':`Got ${got.size}/${pick.length} items… Mama will make it work.`,0,ok?2:0); }
+  });
+};
+
+// Prep food: tap steps in correct order
+GAMES.prep=()=>{
+  const recipes=[
+    {n:'Chicken Adobo',s:[['🧄','Sauté garlic'],['🍗','Add chicken'],['🧂','Soy sauce & vinegar'],['🔥','Simmer'],['🍚','Serve with rice']]},
+    {n:'Sinigang na Isda',s:[['💧','Boil water'],['🍅','Add tomato & onion'],['🐟','Add fish'],['🥬','Add kangkong'],['🍲','Serve hot']]},
+    {n:'Tortang Talong',s:[['🍆','Grill eggplant'],['🥚','Beat eggs'],['🫓','Dip eggplant'],['🍳','Fry'],['🍽️','Plate it']]},
+  ];
+  const r=recipes[(S.day-1)%recipes.length];
+  dialogue([{who:'mom',t:`Anak, let\'s have ${r.n} today. Remember the order I taught you!`}],()=>{
+    clearTimers(); let k=0, err=0;
+    const shuffled=r.s.map((x,i)=>[...x,i]).sort(()=>Math.random()-.5);
+    app.innerHTML=`<div class="screen"><div class="topline"><span>🍳 ${r.n}</span><span>Mistakes: <span id="e">0</span></span></div><p>Tap the steps in the correct order:</p><div class="grid">${shuffled.map(x=>`<div class="tile" data-i="${x[2]}">${x[0]}<small>${x[1]}</small></div>`).join('')}</div><div id="prog" class="list">Next step: #1</div></div>`;
+    app.querySelectorAll('.tile').forEach(t=>t.onclick=()=>{
+      if(t.classList.contains('good'))return;
+      if(+t.dataset.i===k){t.classList.add('good');beep(700+k*100);k++;$('#prog').textContent=k<r.s.length?'Next step: #'+(k+1):'Done!'; if(k===r.s.length) setTimeout(()=>finish('prep',8,err<2?`Perfect ${r.n}! Mama is impressed 😋`:`${r.n} is ready — a bit salty, but loved.`,0,err<2?3:1),400);}
+      else {err++;$('#e').textContent=err;t.classList.add('bad');beep(180,.15,'square');setTimeout(()=>t.classList.remove('bad'),300);}
+    });
+  });
+};
+
+// Dishes: scrub each plate (tap 4x)
+GAMES.dishes=()=>{
+  clearTimers(); const N=9, need=4; let clean=0, time=20;
+  app.innerHTML=`<div class="screen"><div class="topline"><span>🍽️ Wash the dishes</span><span>⏱ <span id="t">${time}</span>s</span></div><p>Tap each dirty dish ${need} times to scrub it clean! 🧽</p><div class="grid" id="g"></div></div>`;
+  const g=$('#g'); const icons=['🍽️','🥣','🍳','🥄','☕','🍲'];
+  for(let i=0;i<N;i++){const d=document.createElement('div');d.className='tile';d.dataset.h=0;d.innerHTML=icons[i%icons.length]+'<small>dirty 🟤🟤🟤🟤</small>';
+    d.onclick=()=>{let h=+d.dataset.h; if(h>=need)return; h++; d.dataset.h=h; beep(400+h*120,.05,'triangle'); d.querySelector('small').textContent=h>=need?'sparkling ✨':'dirty '+'🟤'.repeat(need-h)+'🫧'.repeat(h); if(h>=need){d.classList.add('good');clean++; if(clean===N)end();}};
+    g.appendChild(d);}
+  timers.push(setInterval(()=>{time--;$('#t').textContent=time;if(time<=0)end();},1000));
+  function end(){clearTimers(); finish('dishes',8, clean===N?'Every dish is sparkling! ✨':`${clean}/${N} clean… Ate Lyn finished the rest.`,0,clean===N?2:0);}
+};
+
+// Laundry: sort falling clothes into whites / colors
+GAMES.laundry=()=>{
+  dialogue([{who:'lyn',t:'Bunso, careful! Don\'t mix my white uniform with the colored shirts again, haha!'}],()=>{
+    clearTimers(); let n=0, right=0; const total=12;
+    const whites=['🥼','🧦','👕'], colors=['👗','🧣','👖','🩳','🧥','👚'];
+    app.innerHTML=`<div class="screen"><div class="topline"><span>👕 Laundry</span><span id="c">0/${total}</span></div><p>Is it WHITE or COLORED? Sort it fast!</p>
+      <div class="arena center" style="display:flex;flex-direction:column;align-items:center;justify-content:center"><div id="cl" style="font-size:100px"></div><div id="lbl" style="font-size:18px;font-weight:700"></div></div>
+      <div style="display:flex;gap:10px"><button class="btn" id="w" style="background:#eee;color:#333;box-shadow:0 3px 0 #bbb">⚪ Whites</button><button class="btn" id="co">🌈 Colors</button></div></div>`;
+    let cur;
+    function next(){ if(n>=total)return end(); const isW=Math.random()<.45; const ic=isW?whites[Math.floor(Math.random()*3)]:colors[Math.floor(Math.random()*6)]; cur={isW};
+      $('#cl').textContent=ic; $('#cl').style.filter=isW?'grayscale(1) brightness(1.6)':'saturate(1.6)'; $('#lbl').textContent=isW?'(white)':'(colored)'; }
+    function ans(w){ n++; if(w===cur.isW){right++;beep(850);} else {beep(180,.15,'square');toast('Oops! Wrong pile');} $('#c').textContent=n+'/'+total; next(); }
+    $('#w').onclick=()=>ans(true); $('#co').onclick=()=>ans(false);
+    function end(){ finish('laundry',10, right>=10?'Laundry washed and hung to dry! 👕☀️':`Sorted ${right}/${total}… one shirt turned pink. 😅`,0,right>=10?2:0); }
+    next();
+  });
+};
+
+// Singing gig: rhythm game
+function gigIntro(){
+  const g=GIG_INFO[S.day];
+  const lines=[{who:'manager',t:`Rie! ${g.venue} is packed tonight. Hit those notes and the pay is up to ${peso(g.pay)}.`},{who:'rie',t:'Tap the pads when the notes reach the gold line. Let\'s go! 🎤'}];
+  if(S.day===5) lines.unshift({who:'mom',t:'We\'re all here, anak. Sing like you always did in the kitchen. 💛'});
+  dialogue(lines,()=>rhythm(g));
+}
+function rhythm(g){
+  clearTimers();
+  app.innerHTML=`<div class="screen" style="padding:10px"><div class="topline"><span>🎤 ${g.venue}</span><span>Score <span id="sc">0</span></span></div>
+   <div class="arena" id="ar" style="background:linear-gradient(#2b1d19,#5a2a35)">
+    <div class="lane" style="left:0"></div><div class="lane" style="left:33.33%"></div><div class="lane" style="left:66.66%;border:0"></div>
+    <div class="hitline"></div><div class="pads"><div data-l="0">🎵</div><div data-l="1">🎶</div><div data-l="2">🎼</div></div>
+    <div id="combo" style="position:absolute;top:10px;left:0;right:0;text-align:center;color:#fff;font-weight:800;font-size:20px"></div>
+   </div></div>`;
+  const ar=$('#ar'); const notes=[]; let score=0, hits=0, total=0, combo=0, spawned=0; const TOTAL=36+S.day*4;
+  const speed=0.22+S.day*0.025; // px per ms
+  const freqs=[523,659,784];
+  let last=performance.now(), nextSpawn=600;
+  function spawn(){ const l=Math.floor(Math.random()*3); const e=document.createElement('div'); e.className='note'; e.style.left=(l*33.33)+'%'; e.textContent='♪'; ar.appendChild(e); notes.push({l,y:-44,e}); spawned++; total++; }
+  function loop(now){
+    const dt=now-last; last=now; nextSpawn-=dt;
+    if(nextSpawn<=0 && spawned<TOTAL){spawn(); nextSpawn=Math.max(340,700-S.day*60)+Math.random()*250;}
+    const hitY=ar.clientHeight-90;
+    for(let i=notes.length-1;i>=0;i--){const n=notes[i]; n.y+=speed*dt; n.e.style.top=n.y+'px';
+      if(n.y>hitY+40){n.e.remove();notes.splice(i,1);combo=0;$('#combo').textContent='miss';}}
+    if(spawned>=TOTAL && notes.length===0) return end();
+    timers.push(requestAnimationFrame(loop));
+  }
+  ar.querySelectorAll('.pads div').forEach(p=>p.addEventListener('touchstart',e=>{e.preventDefault();hit(+p.dataset.l);},{passive:false}));
+  ar.querySelectorAll('.pads div').forEach(p=>p.addEventListener('mousedown',()=>hit(+p.dataset.l)));
+  function hit(l){
+    const hitY=ar.clientHeight-90-22; let best=-1,bd=1e9;
+    notes.forEach((n,i)=>{if(n.l===l){const d=Math.abs(n.y-hitY);if(d<bd){bd=d;best=i;}}});
+    if(best>=0 && bd<60){ const n=notes[best]; n.e.remove(); notes.splice(best,1); hits++; combo++; const pts=bd<25?100:50; score+=pts+combo*5; beep(freqs[l]*(bd<25?2:1),.15,'triangle',.12);
+      $('#combo').textContent=(bd<25?'PERFECT':'GOOD')+(combo>2?' x'+combo:''); $('#sc').textContent=score; }
+    else { combo=0; beep(150,.08,'square',.06); }
+  }
+  function end(){ clearTimers(); const acc=total?hits/total:0; const pay=Math.round(g.pay*(0.35+0.65*acc)/50)*50;
+    const grade=acc>.9?'Standing ovation! 🌟':acc>.7?'The crowd loved it! 👏':acc>.45?'Nice set! 🎶':'A rough night… but you finished.';
+    finish('gig',20,`${grade}<br><small>Accuracy ${Math.round(acc*100)}%</small>`,pay,acc>.7?4:1); }
+  timers.push(requestAnimationFrame(t=>{last=t;loop(t);}));
+}
+
+// ---------- Ending ----------
+function ending(){
+  clearTimers();
+  const money=S.money>=GOAL, friend=S.friend>=7, free=S.letgo>=8, chores=!(S.flags.missed);
+  const lines=[];
+  lines.push({who:'mom',t: money?`Anak… ${peso(S.money)}. The rent is paid, and there\'s food for the whole month. 😭 Salamat.`:`We have ${peso(S.money)}. It\'s not quite enough, but we\'ll ask for a little more time. We\'re together — that\'s what matters.`});
+  lines.push({who:'joy',t: chores?'And the house never looked better. The boys were never late once. You\'re amazing, bunso.':'Some chores slipped, but you carried so much. We\'ll help more, promise.'});
+  lines.push({who:'lyn',t: 'From now on, we split the chores. You deserve to rest AND to sing.'});
+  if(friend) lines.push({who:'bea',t:'And you saved me this week, Rie. I\'m smiling again because of you. 💛'});
+  lines.push({who:'rie',t: free?'And me? I\'m finally free. The people who deceived me don\'t live in my head anymore. I wish them well — from far away. 🕊️':'There are still old wounds… but I\'m learning to let them go, one day at a time.'});
+  dialogue(lines,()=>{
+    const stars=[money,chores,friend,free].filter(Boolean).length;
+    const titleTxt=stars===4?'⭐ Perfect Ending: Rie Shines ⭐':stars>=2?'Good Ending: Family First':'Ending: Tomorrow Is Another Song';
+    app.innerHTML=`<div class="screen center" style="justify-content:center"><img class="portrait" src="rie.jpg"><h1 style="font-size:24px">${titleTxt}</h1>
+      <p>${money?'✅':'❌'} Earned ${peso(GOAL)} for the family (${peso(S.money)})<br>${chores?'✅':'❌'} Finished ALL house chores every day<br>${friend?'✅':'❌'} Helped Bea heal<br>${free?'✅':'❌'} Let go of the deceivers</p>
+      <p style="font-size:30px">${'⭐'.repeat(stars)}${'☆'.repeat(4-stars)}</p>
+      <button class="btn" id="again">Play Again</button></div>`;
+    $('#again').onclick=()=>{S=JSON.parse(JSON.stringify(DEFAULT));save();title();};
+  });
+}
+
+title();
+</script>
+</body>
+</html>
