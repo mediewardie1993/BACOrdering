@@ -155,17 +155,19 @@ ui.innerHTML=`
 #ui3d .bar{width:150px;height:6px;background:#ffffff33;border-radius:4px;overflow:hidden;margin:3px 0}
 #ui3d .bar i{display:block;height:100%;background:#d4a23a}
 #ui3d .rbtn{position:absolute;pointer-events:auto;border:0;border-radius:14px;background:#2b1d19dd;color:#fff;font-weight:700;font-size:15px;padding:10px 14px}
-#act{right:20px;bottom:24px;background:#c2364b!important;font-size:18px!important;padding:16px 22px!important;border-radius:40px!important;box-shadow:0 4px 0 #8e2032;display:none}
-#joy{position:absolute;left:0;top:0;bottom:0;width:55%;pointer-events:auto}
-#stick{position:absolute;width:110px;height:110px;border-radius:50%;background:#ffffff40;border:2px solid #ffffff90;display:none}
-#stick i{position:absolute;left:35px;top:35px;width:40px;height:40px;border-radius:50%;background:#fff}
+#act{right:24px;bottom:28px;width:110px;height:110px;background:#c2364b!important;font-size:16px!important;border-radius:50%!important;box-shadow:0 4px 0 #8e2032;border:3px solid #fff!important}
+#act.off{background:#2b1d1999!important;box-shadow:none;opacity:.7}
+#joy{position:absolute;left:0;top:60px;bottom:0;width:50%;pointer-events:auto}
+#stick{position:absolute;left:30px;bottom:30px;width:130px;height:130px;border-radius:50%;background:#2b1d1955;border:3px solid #fff;pointer-events:none}
+#stick::after{content:'⬆\\A⬅ ➡\\A⬇';white-space:pre;position:absolute;inset:0;display:flex;align-items:center;justify-content:center;text-align:center;color:#fff9;font-size:14px;line-height:1.5}
+#stick i{position:absolute;left:40px;top:40px;width:50px;height:50px;border-radius:50%;background:#fff;box-shadow:0 2px 6px #0005;z-index:1}
 #hint{position:absolute;left:50%;bottom:10px;transform:translateX(-50%);background:#2b1d19aa;color:#fff;padding:6px 12px;border-radius:10px;font-size:13px;white-space:nowrap}
 </style>
 <div id="joy"><div id="stick"><i></i></div></div>
 <div class="top" id="topbar"></div>
 <button class="rbtn" id="mlist" style="right:12px;top:10px">📋 Missions</button>
 <button class="rbtn" id="act">💬 Talk</button>
-<div id="hint">Drag left side to walk · walk up to people & objects</div>`;
+<div id="hint">🕹️ Joystick to walk · red button to talk / start</div>`;
 const actBtn=document.getElementById('act');
 document.getElementById('mlist').onclick=()=>missionsPanel();
 function refreshHUD(){
@@ -178,9 +180,9 @@ function refreshHUD(){
 // ---- input: virtual joystick + keyboard ----
 const joy=document.getElementById('joy'), stick=document.getElementById('stick'), knob=stick.firstChild;
 let jv={x:0,y:0}, jo=null;
-function jstart(x,y){jo={x,y};stick.style.display='block';stick.style.left=(x-55)+'px';stick.style.top=(y-55)+'px';}
-function jmove(x,y){if(!jo)return;let dx=x-jo.x,dy=y-jo.y;const d=Math.hypot(dx,dy),m=45;if(d>m){dx*=m/d;dy*=m/d;}jv={x:dx/m,y:dy/m};knob.style.transform=`translate(${dx}px,${dy}px)`;}
-function jend(){jo=null;jv={x:0,y:0};stick.style.display='none';knob.style.transform='';}
+function jstart(x,y){const r=stick.getBoundingClientRect();jo={x:r.left+r.width/2,y:r.top+r.height/2};jmove(x,y);}
+function jmove(x,y){if(!jo)return;let dx=x-jo.x,dy=y-jo.y;const d=Math.hypot(dx,dy),m=50;if(d>m){dx*=m/d;dy*=m/d;}jv={x:dx/m,y:dy/m};knob.style.transform=`translate(${dx}px,${dy}px)`;}
+function jend(){jo=null;jv={x:0,y:0};knob.style.transform='';}
 joy.addEventListener('touchstart',e=>{e.preventDefault();const t=e.changedTouches[0];jstart(t.clientX,t.clientY);},{passive:false});
 joy.addEventListener('touchmove',e=>{e.preventDefault();const t=e.changedTouches[0];jmove(t.clientX,t.clientY);},{passive:false});
 joy.addEventListener('touchend',jend);joy.addEventListener('touchcancel',jend);
@@ -205,7 +207,7 @@ function interact(n){
   }
   if(n.mission) startMission(n.mission);
 }
-actBtn.onclick=()=>interact(near);
+actBtn.onclick=()=>{ if(near) interact(near); else toast('Walk closer to someone or something with a ❗'); };
 
 // ---- loop ----
 const clock=new THREE.Clock(); let walkT=0;
@@ -214,7 +216,7 @@ function overlayOpen(){return document.getElementById('app').childElementCount>0
 function tick(){
   requestAnimationFrame(tick);
   const dt=Math.min(.05,clock.getDelta());
-  if(overlayOpen()){ actBtn.style.display='none'; return; }
+  if(overlayOpen()) return;
   let mx=jv.x+((keys.d||keys.arrowright)?1:0)-((keys.a||keys.arrowleft)?1:0);
   let mz=jv.y+((keys.s||keys.arrowdown)?1:0)-((keys.w||keys.arrowup)?1:0);
   const mag=Math.min(1,Math.hypot(mx,mz)); const ud=rie.userData;
@@ -233,9 +235,10 @@ function tick(){
   // nearest interactable
   near=null; let bd=2.6;
   NPC.forEach(n=>{const p=n.mesh.getWorldPosition(new THREE.Vector3());const d=Math.hypot(p.x-rie.position.x,p.z-rie.position.z);if(d<bd){bd=d;near=n;}});
-  if(near){ actBtn.style.display='block'; const done=near.mission&&S.done[near.mission];
+  actBtn.classList.toggle('off',!near);
+  if(near){ const done=near.mission&&S.done[near.mission];
     actBtn.textContent = near.mission==='sleep'?'🌙 End the day': near.talk||done ? '💬 Talk' : near.isStation ? '▶ Start' : '💬 Talk'; }
-  else actBtn.style.display='none';
+  else actBtn.textContent='✋ Action';
   camera.position.copy(rie.position).add(camOff); camera.lookAt(rie.position.x,rie.position.y+1.2,rie.position.z);
   renderer.render(scene,camera);
 }
