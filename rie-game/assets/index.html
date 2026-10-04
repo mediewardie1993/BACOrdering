@@ -8,7 +8,8 @@
 :root{--bg:#fff4ec;--card:#ffffff;--ink:#3b2a24;--muted:#8a6f63;--accent:#c2364b;--gold:#d4a23a;--hair:#6b3a22;--ok:#3f9d5a}
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;user-select:none}
 html,body{margin:0;height:100%;background:var(--bg);color:var(--ink);font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;overflow:hidden}
-#app{position:fixed;inset:0;display:flex;flex-direction:column}
+#app{position:fixed;inset:0;display:flex;flex-direction:column;background:var(--bg);z-index:5}
+#app:empty{display:none}
 .screen{flex:1;display:flex;flex-direction:column;overflow-y:auto;padding:16px}
 h1{font-size:28px;margin:8px 0 4px;color:var(--accent)}
 h2{font-size:20px;margin:6px 0}
@@ -63,10 +64,24 @@ p{line-height:1.45}
 @keyframes up{to{transform:translateY(-40px);opacity:0}}
 .cloud{position:absolute;font-size:46px;transition:opacity .4s, transform .4s}
 .center{text-align:center}
+@media (orientation:landscape){
+  .screen{padding:10px 16px}
+  .scene .who{bottom:auto;top:20px;left:20px;right:auto;width:160px}
+  .dbox{left:190px;bottom:10px;top:auto;min-height:150px}
+  .grid{grid-template-columns:repeat(6,1fr);gap:8px;padding:6px}
+  .tile{padding:8px 2px;font-size:30px}
+  #cl{font-size:64px!important}
+  .portrait{width:110px;height:110px}
+  h1{font-size:24px}
+  .mission{padding:8px;margin:5px 0}
+}
 </style>
 </head>
 <body>
+<canvas id="world"></canvas>
+<div id="ui3d"></div>
 <div id="app"></div>
+<script src="three.min.js"></script>
 <script>
 // ---------- Rie sprite (long brown hair, black floral sundress, gold hoops & necklace) ----------
 function rieSVG(size, mood){
@@ -183,8 +198,8 @@ function startDay(){
   if(intro && !S.flags['open'+S.day]){ S.flags['open'+S.day]=true; save(); dialogue(intro,hub); } else hub();
 }
 
-function hub(){
-  clearTimers(); backHandler=title;
+function missionsPanel(){
+  clearTimers(); backHandler=hub;
   const list=[...CHORES, heartMission(), letgoMission(), bfMission(), catMission()];
   const gig=GIG_INFO[S.day];
   const choresLeft=CHORES.filter(c=>!S.done[c.id]).length;
@@ -200,9 +215,17 @@ function hub(){
     ${list.map(m=>`<div class="mission ${S.done[m.id]?'done':''}" data-id="${m.id}"><div class="ic">${m.ic}</div><div class="t"><b>${m.name}</b><small>${m.sub} · ⚡-${m.cost}</small></div></div>`).join('')}
     <button class="btn" id="sleep">🌙 End the day</button>
   </div>`;
+  app.querySelector('.screen').insertAdjacentHTML('afterbegin','<button class="btn alt small" id="close">◀ Back to the world</button>');
+  $('#close').onclick=hub;
   app.querySelectorAll('.mission').forEach(el=>el.onclick=()=>{
-    const id=el.dataset.id;
+    const id=el.dataset.id; toast(S.done[id]?'Already done today!':'📍 '+(WHERE[id]||'Find it in the world'));
+  });
+  $('#sleep').onclick=endDay;
+}
+const WHERE={gig:'Walk to the stage and talk to Sir Dante',school1:'Find Miggy by the jeepney',school2:'Find Miguel by the jeepney',market:'Visit Aling Nena\'s market stall',prep:'Go to the stove in the kitchen',dishes:'Go to the sink in the kitchen',laundry:'Go to the laundry tub in the yard',friend:'Bea is sitting on the park bench',letgo:'Walk to the dark cloud by the old tree',bf:'Kiko is waiting by the gate',cats:'Sundae & Tofi are on the sofa'};
+function startMission(id){
     if(S.done[id]){toast('Already done today!');return;}
+    const list=[...CHORES, heartMission(), letgoMission(), bfMission(), catMission()];
     const m=id==='gig'?{cost:20}:list.find(x=>x.id===id);
     if(S.energy<m.cost){toast('Too tired… rest by ending the day.');return;}
     if(id==='gig') return gigIntro();
@@ -211,8 +234,6 @@ function hub(){
     if(id==='bf') return bfScene();
     if(id==='cats') return catScene();
     GAMES[id]();
-  });
-  $('#sleep').onclick=endDay;
 }
 
 function finish(id, cost, msg, money=0, heart=0){
@@ -585,7 +606,8 @@ function ending(){
   });
 }
 
-title();
 </script>
+<script src="world.js"></script>
+<script>title();</script>
 </body>
 </html>
