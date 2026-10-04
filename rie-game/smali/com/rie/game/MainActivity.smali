@@ -10,7 +10,7 @@
 .end method
 
 .method protected onCreate(Landroid/os/Bundle;)V
-    .registers 5
+    .registers 6
     invoke-super {p0, p1}, Landroid/app/Activity;->onCreate(Landroid/os/Bundle;)V
     new-instance v0, Landroid/webkit/WebView;
     invoke-direct {v0, p0}, Landroid/webkit/WebView;-><init>(Landroid/content/Context;)V
@@ -32,7 +32,7 @@
 .end method
 
 .method public onBackPressed()V
-    .registers 3
+    .registers 4
     iget-object v0, p0, Lcom/rie/game/MainActivity;->web:Landroid/webkit/WebView;
     const-string v1, "window.onBack&&window.onBack()"
     const/4 v2, 0x0
