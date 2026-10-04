@@ -106,8 +106,8 @@ const CAST={
   mom:{name:'Mama',color:'#7a5a9e',emoji:'👩🏻‍🦳'},
   joy:{name:'Ate Joy',color:'#d97a2b',emoji:'👩🏻'},
   lyn:{name:'Ate Lyn',color:'#2b8a8a',emoji:'👩🏻‍🦱'},
-  migo:{name:'Migo',color:'#3a7bd5',emoji:'👦🏻'},
-  pao:{name:'Pao',color:'#5aa04a',emoji:'🧒🏻'},
+  migo:{name:'Miggy',color:'#3a7bd5',emoji:'👦🏻'},
+  pao:{name:'Miguel',color:'#5aa04a',emoji:'🧒🏻'},
   bea:{name:'Bea',color:'#6d7fa8',emoji:'😢'},
   manager:{name:'Sir Dante',color:'#444',emoji:'🧔🏻'},
   vendor:{name:'Aling Nena',color:'#a0522d',emoji:'👵🏻'},
@@ -143,8 +143,8 @@ function beep(f=660,d=.08,type='sine',v=.15){try{AC=AC||new (window.AudioContext
 
 // ---------- Missions ----------
 const CHORES=[
-  {id:'school1',ic:'🏫',name:'Bring Migo to school',sub:'St. Jude Elementary — across town',cost:10},
-  {id:'school2',ic:'🎒',name:'Bring Pao to school',sub:'Little Stars Preschool — other side!',cost:10},
+  {id:'school1',ic:'🏫',name:'Bring Miggy to school',sub:'St. Jude Elementary — across town',cost:10},
+  {id:'school2',ic:'🎒',name:'Bring Miguel to school',sub:'Little Stars Preschool (special-ed class) — other side!',cost:10},
   {id:'market',ic:'🧺',name:'Go to the market',sub:'Buy everything on Mama\'s list',cost:10},
   {id:'prep',ic:'🍳',name:'Prep the food',sub:'Cook in the right order',cost:8},
   {id:'dishes',ic:'🍽️',name:'Wash the dishes',sub:'Scrub every plate clean',cost:8},
@@ -280,7 +280,7 @@ const INTRO=[
   {who:'rie',t:'Another morning in our little house. Papa\'s been gone a long time now… so it\'s Mama, my two Ates, my nephews, and me.'},
   {who:'mom',t:'Rie, anak! Gising na. The rent is due at the end of the week — ₱15,000. I don\'t know how we\'ll make it.'},
   {who:'rie',t:'Don\'t worry, Ma. I booked singing gigs every night this week. We\'ll make it, promise.'},
-  {who:'joy',t:'Rie, I have early shift at the hospital again. Can you bring Migo to St. Jude? And Pao to Little Stars?'},
+  {who:'joy',t:'Rie, I have early shift at the hospital again. Can you bring Miggy to St. Jude? And Miguel to Little Stars? His teacher wants to see you about his new picture cards.'},{who:'pao',t:'(Miguel, 4, doesn\'t talk yet. He grabs Tita Rie\'s finger and doesn\'t let go. That\'s his way of saying "you.")'},{who:'rie',t:'Good morning, my Miguel. Tita\'s here. 💛'},
   {who:'lyn',t:'And since I\'m doing overtime at the call center… the laundry, dishes, market and cooking… pasensya na, bunso. 🙏'},
   {who:'rie',t:'Two schools on opposite ends of town, all the chores, AND a gig every night? …Kaya ko \'to. I can do this.'},
   {who:'mom',t:'One more thing, anak. Bea called. She sounded like she was crying.'},
@@ -295,7 +295,7 @@ const KIKO_OPEN=[
   [{who:'kiko',t:'Big night. I\'ll be at the side of the stage with water and your throat lozenges. Whatever happens, I\'m proud of you.'},{who:'rie',t:'…Babe. I don\'t deserve you.'}],
 ];
 const DAY_OPEN={
-  2:[{who:'migo',t:'Tita Rie! Can you sing the song from last night on the way to school?'},{who:'pao',t:'Me too! Me too! 🎵'},{who:'rie',t:'Okay okay — but only if you two don\'t run off at the crossing!'}],
+  2:[{who:'migo',t:'Tita Rie! Can you sing the song from last night on the way to school?'},{who:'pao',t:'(Miguel claps his hands and sways — he wants the song too! 🎵)'},{who:'rie',t:'Okay okay, kuya Miggy and baby Miguel — but hold hands at the crossing!'},{who:'migo',t:'Don\'t worry Tita, I\'ll hold Miguel\'s hand. I\'m the kuya!'}],
   3:[{who:'joy',t:'Bunso, you look tired. Here — I made you coffee. Thank you for everything with the boys.'},{who:'rie',t:'Salamat, Ate Joy. Halfway there… I can feel it.'},{who:'lyn',t:'I heard the wedding crowd loved you! Someone posted your video. 😍'}],
   4:[{who:'mom',t:'Anak, I counted what you\'ve given so far. I\'m so proud of you. Don\'t forget to rest, ha?'},{who:'rie',t:'Two more days, Ma. Then we\'re safe.'}],
   5:[{who:'lyn',t:'Last day! The fiesta concert is TONIGHT. Ate Joy and I will be in the front row!'},{who:'joy',t:'We\'ll bring the boys. Mama too. Show them what our Rie can do!'},{who:'rie',t:'Okay… deep breath. Chores first, then the biggest stage of my life.'}],
@@ -412,7 +412,7 @@ function schoolGame(id){
   const school=id==='school1'?'St. Jude Elementary':'Little Stars Preschool';
   const intro=id==='school1'
     ?[{who:'migo',t:'Tita, I can\'t be late! Teacher said there\'s a quiz today!'},{who:'rie',t:'Hold my hand, we\'ll take the jeep to St. Jude.'}]
-    :[{who:'pao',t:'Tita Rie, carry me? My legs are sleepy.'},{who:'rie',t:'Haha, okay — Little Stars, here we come!'}];
+    :[{who:'pao',t:'(Miguel lifts his arms up and taps the picture card that says "CARRY".)'},{who:'rie',t:'You used your card! Galing! Okay, up you go — Little Stars, here we come!'},{who:'pao',t:'(He hums softly against your shoulder. He doesn\'t need words for you to understand.)'}];
   dialogue(intro,()=>{
     clearTimers();
     const steps=[
@@ -566,6 +566,8 @@ function ending(){
   const lines=[];
   lines.push({who:'mom',t: money?`Anak… ${peso(S.money)}. The rent is paid, and there\'s food for the whole month. 😭 Salamat.`:`We have ${peso(S.money)}. It\'s not quite enough, but we\'ll ask for a little more time. We\'re together — that\'s what matters.`});
   lines.push({who:'joy',t: chores?'And the house never looked better. The boys were never late once. You\'re amazing, bunso.':'Some chores slipped, but you carried so much. We\'ll help more, promise.'});
+  lines.push({who:'migo',t:'Tita, you were the best singer EVER! Right, Miguel?'});
+  lines.push({who:'pao',t:'(Miguel runs to Rie, hugs her legs, and hums the first notes of her song. Everyone goes quiet — then cries.) 💛'});
   lines.push({who:'lyn',t: 'From now on, we split the chores. You deserve to rest AND to sing.'});
   lines.push({who:'kiko',t:'And Rie — I know you think every surprise went perfectly. 😂 They were all disasters. And I loved every single one, because they were from you. Let me help you more, okay?'});
   lines.push({who:'rie',t:'…They were DISASTERS?! Oh no. Okay. I\'ll let you help. Starting now. 💙'});
