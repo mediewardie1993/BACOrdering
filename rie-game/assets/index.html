@@ -127,7 +127,7 @@ const CAST={
   manager:{name:'Sir Dante',color:'#444',emoji:'🧔🏻'},
   vendor:{name:'Aling Nena',color:'#a0522d',emoji:'👵🏻'},
   ghost:{name:'Old Memory',color:'#555',emoji:'🎭'},
-  kiko:{name:'Kiko',color:'#2f5d8a',emoji:'👨🏻'},
+  midwardo:{name:'Midwardo',color:'#2f5d8a',emoji:'👨🏻'},
   sundae:{name:'Sundae',color:'#f3e9e4',emoji:'🐱'},
   tofi:{name:'Tofi',color:'#1d1d1d',emoji:'🐈‍⬛'},
   shadow:{name:'Nightmare',color:'#1c1530',emoji:'👤'},
@@ -167,7 +167,7 @@ const CHORES=[
   {id:'laundry',ic:'👕',name:'Wash the clothes',sub:'Sort whites and colors',cost:10},
 ];
 function heartMission(){return {id:'friend',ic:'💌',name:'Check on Bea',sub:'Your friend is going through a hard time',cost:8};}
-function bfMission(){return {id:'bf',ic:'💝',name:'Make it up to Kiko',sub:'Your boyfriend always helps… you keep forgetting him',cost:8};}
+function bfMission(){return {id:'bf',ic:'💝',name:'Make it up to Midwardo',sub:'Your boyfriend always helps… you keep forgetting him',cost:8};}
 function catMission(){return {id:'cats',ic:'🐾',name:'Cuddle Sundae & Tofi',sub:'Your cats comfort you · restores energy',cost:0};}
 function letgoMission(){return {id:'letgo',ic:'🕊️',name:'Let go of the past',sub:'Free yourself from the people who deceived you',cost:8};}
 const GIG_INFO=[
@@ -223,7 +223,7 @@ function missionsPanel(){
   });
   $('#sleep').onclick=endDay;
 }
-const WHERE={gig:'Walk to the stage and talk to Sir Dante',school1:'Find Miggy by the jeepney',school2:'Find Miguel by the jeepney',market:'Visit Aling Nena\'s market stall',prep:'Go to the stove in the kitchen',dishes:'Go to the sink in the kitchen',laundry:'Go to the laundry tub in the yard',friend:'Bea is sitting on the park bench',letgo:'Walk to the dark cloud by the old tree',bf:'Kiko is waiting by the gate',cats:'Sundae & Tofi are on the sofa'};
+const WHERE={gig:'Walk to the stage and talk to Sir Dante',school1:'Find Miggy by the jeepney',school2:'Find Miguel by the jeepney',market:'Visit Aling Nena\'s market stall',prep:'Go to the stove in the kitchen',dishes:'Go to the sink in the kitchen',laundry:'Go to the laundry tub in the yard',friend:'Bea is sitting on the park bench',letgo:'Walk to the dark cloud by the old tree',bf:'Midwardo is waiting by the gate',cats:'Sundae & Tofi are on the sofa'};
 function startMission(id){
     if(S.done[id]){toast('Already done today!');return;}
     const list=[...CHORES, heartMission(), letgoMission(), bfMission(), catMission()];
@@ -311,11 +311,11 @@ const INTRO=[
   {who:'mom',t:'That\'s my girl. One step at a time. Lord will provide. Kain ka muna bago umalis!'},
 ];
 const KIKO_OPEN=[
-  [{who:'kiko',t:'Babe! I\'m off today. Let me drive the boys to school so you can rest?'},{who:'rie',t:'Ay, no need, I got it! Busy-busy, talk later! 😘'},{who:'kiko',t:'…Okay. I\'m here if you need me. 💙'}],
-  [{who:'kiko',t:'I bought groceries for your Mama on my way home. Also… it was our monthsary yesterday.'},{who:'rie',mood:'sad',t:'WAIT. Yesterday?! Babe I\'m so sorry — I\'ll make it up to you, promise!'}],
-  [{who:'kiko',t:'I\'ll wash the dishes tonight while you\'re at the gig, okay?'},{who:'rie',t:'Mm-hm, sure, love you, bye! (forgets to reply for 9 hours)'},{who:'kiko',t:'Babe… you\'ve been quiet lately. Is something bothering you?'},{who:'rie',t:'Me? Nothing! I\'m fine! 😊 (smiles too fast)'}],
-  [{who:'kiko',t:'I printed posters for your fiesta concert and gave them out at work. 🥹'},{who:'rie',t:'Aww! You\'re the best. I\'ll treat you this week, I swear!'}],
-  [{who:'kiko',t:'Big night. I\'ll be at the side of the stage with water and your throat lozenges. Whatever happens, I\'m proud of you.'},{who:'rie',t:'…Babe. I don\'t deserve you.'}],
+  [{who:'midwardo',t:'Babe! I\'m off today. Let me drive the boys to school so you can rest?'},{who:'rie',t:'Ay, no need, I got it! Busy-busy, talk later! 😘'},{who:'midwardo',t:'…Okay. I\'m here if you need me. 💙'}],
+  [{who:'midwardo',t:'I bought groceries for your Mama on my way home. Also… it was our monthsary yesterday.'},{who:'rie',mood:'sad',t:'WAIT. Yesterday?! Babe I\'m so sorry — I\'ll make it up to you, promise!'}],
+  [{who:'midwardo',t:'I\'ll wash the dishes tonight while you\'re at the gig, okay?'},{who:'rie',t:'Mm-hm, sure, love you, bye! (forgets to reply for 9 hours)'},{who:'midwardo',t:'Babe… you\'ve been quiet lately. Is something bothering you?'},{who:'rie',t:'Me? Nothing! I\'m fine! 😊 (smiles too fast)'}],
+  [{who:'midwardo',t:'I printed posters for your fiesta concert and gave them out at work. 🥹'},{who:'rie',t:'Aww! You\'re the best. I\'ll treat you this week, I swear!'}],
+  [{who:'midwardo',t:'Big night. I\'ll be at the side of the stage with water and your throat lozenges. Whatever happens, I\'m proud of you.'},{who:'rie',t:'…Babe. I don\'t deserve you.'}],
 ];
 const DAY_OPEN={
   2:[{who:'migo',t:'Tita Rie! Can you sing the song from last night on the way to school?'},{who:'pao',t:'(Miguel claps his hands and sways — he wants the song too! 🎵)'},{who:'rie',t:'Okay okay, kuya Miggy and baby Miguel — but hold hands at the crossing!'},{who:'migo',t:'Don\'t worry Tita, I\'ll hold Miguel\'s hand. I\'m the kuya!'}],
@@ -369,7 +369,7 @@ function friendScene(){
 // Nightmares: tap the shadows away before they reach Rie; she keeps it to herself in the morning
 const NIGHTMARE={
   1:{intro:'(Rie dreams she is on stage. The mic doesn\'t work. Everyone she trusted is in the crowd — laughing.)',words:['"Fake!"','"You owe us"','"Nobody cares"','"Stupid"','"Give up"','"Liar"']},
-  3:{intro:'(Rie dreams the house is empty. She calls for Mama, for the boys, for Kiko. No one answers.)',words:['"Too late"','"You failed them"','"Not enough"','"Alone"','"Rent is due"','"Your fault"']},
+  3:{intro:'(Rie dreams the house is empty. She calls for Mama, for the boys, for Midwardo. No one answers.)',words:['"Too late"','"You failed them"','"Not enough"','"Alone"','"Rent is due"','"Your fault"']},
   4:{intro:'(Rie dreams the people who deceived her are back, smiling, asking her to trust them again.)',words:['"Trust us"','"Just once more"','"You need us"','"Remember?"','"Come back"','"We\'re sorry"']},
 };
 function nightmare(n){
@@ -411,26 +411,26 @@ function nightmare(n){
 
 // Boyfriend storyline: Rie's make-up plans always turn into disasters — and she thinks they went great
 const BF=[
-  {plans:[['Cook his favorite kare-kare',[{who:'narr',t:'The peanut sauce burned. The smoke alarm went off. Sundae ran under the bed. Kiko ate it anyway, smiling with tears in his eyes (from the smoke).'}]],
+  {plans:[['Cook his favorite kare-kare',[{who:'narr',t:'The peanut sauce burned. The smoke alarm went off. Sundae ran under the bed. Midwardo ate it anyway, smiling with tears in his eyes (from the smoke).'}]],
           ['Surprise him at work with flowers',[{who:'narr',t:'You arrived during his big presentation. You waved. His boss saw. The flowers were the ones Mama uses for the altar.'}]]],
-   rie:'Wow, that went PERFECTLY! He was so touched, he literally cried. 🥰',kiko:'Haha… yeah. Thanks, babe. (coughs)'},
+   rie:'Wow, that went PERFECTLY! He was so touched, he literally cried. 🥰',midwardo:'Haha… yeah. Thanks, babe. (coughs)'},
   {plans:[['Write him a love song',[{who:'narr',t:'You sang it on video call… then realized half the lyrics were about Mama\'s adobo. You also called him "Kuya" by accident.'}]],
           ['Plan a movie night',[{who:'narr',t:'You fell asleep in the first 4 minutes. Tofi sat on the remote and ordered a horror movie for ₱350.'}]]],
-   rie:'Nailed it. Best date ever. He definitely feels appreciated now! 💅',kiko:'It\'s okay, Rie. You\'re tired. Next time let ME take care of YOU.'},
+   rie:'Nailed it. Best date ever. He definitely feels appreciated now! 💅',midwardo:'It\'s okay, Rie. You\'re tired. Next time let ME take care of YOU.'},
   {plans:[['Bake him a cake',[{who:'narr',t:'You used salt instead of sugar. The frosting says "HAPPY BIRTHDAY" — it is not his birthday.'}]],
           ['Buy him a matching couple shirt',[{who:'narr',t:'It\'s 3 sizes too small. And it says "I ❤️ MY GIRLFRIEND\'S CAT."'}]]],
-   rie:'He was speechless! That\'s how you know it worked. 😌',kiko:'I was… definitely speechless. (still wears it to sleep)'},
+   rie:'He was speechless! That\'s how you know it worked. 😌',midwardo:'I was… definitely speechless. (still wears it to sleep)'},
   {plans:[['Take him on a picnic',[{who:'narr',t:'It rained. Ants found the food first. You both got sunburned somehow, after the rain.'}]],
           ['Give him a massage',[{who:'narr',t:'You pressed so hard he heard something pop. He walked funny for two days.'}]]],
-   rie:'Romantic. Iconic. Ten out of ten. We\'re SO back. ✨',kiko:'(limping) Love you, babe.'},
-  {plans:[['Dedicate a song to him on stage',[{who:'narr',t:'You said "This one\'s for my love… KEVIN!" His name is Kiko. 500 people heard it.'}]],
+   rie:'Romantic. Iconic. Ten out of ten. We\'re SO back. ✨',midwardo:'(limping) Love you, babe.'},
+  {plans:[['Dedicate a song to him on stage',[{who:'narr',t:'You said "This one\'s for my love… KEVIN!" His name is Midwardo. 500 people heard it.'}]],
           ['Write him a heartfelt letter',[{who:'narr',t:'You gave him the wrong paper. It was the market list: "tomato, eggs, isda, pampers."'}]]],
-   rie:'I finally made it right. He KNOWS how much I love him now. 💖',kiko:'Rie… I know you love me. You don\'t have to be perfect. I just want you to slow down and be with me sometimes.'},
+   rie:'I finally made it right. He KNOWS how much I love him now. 💖',midwardo:'Rie… I know you love me. You don\'t have to be perfect. I just want you to slow down and be with me sometimes.'},
 ];
 function bfScene(){
   const b=BF[Math.min(S.day,5)-1];
-  dialogue([{who:'rie',t:'Okay. Today I\'m going to make it up to Kiko. For real this time. How?',choices:b.plans.map(p=>({t:p[0],next:[...p[1],{who:'rie',t:b.rie},{who:'kiko',t:b.kiko}]}))}],
-    ()=>{S.flags.bf=(S.flags.bf||0)+1; finish('bf',8,'Rie thinks it went perfectly… 😅<br><small>(Kiko still loves her.)</small>',0,3);});
+  dialogue([{who:'rie',t:'Okay. Today I\'m going to make it up to Midwardo. For real this time. How?',choices:b.plans.map(p=>({t:p[0],next:[...p[1],{who:'rie',t:b.rie},{who:'midwardo',t:b.midwardo}]}))}],
+    ()=>{S.flags.bf=(S.flags.bf||0)+1; finish('bf',8,'Rie thinks it went perfectly… 😅<br><small>(Midwardo still loves her.)</small>',0,3);});
 }
 // Cats: comfort, restore energy
 const CAT_LINES=[
@@ -635,7 +635,7 @@ function ending(){
   lines.push({who:'migo',t:'Tita, you were the best singer EVER! Right, Miguel?'});
   lines.push({who:'pao',t:'(Miguel runs to Rie, hugs her legs, and hums the first notes of her song. Everyone goes quiet — then cries.) 💛'});
   lines.push({who:'lyn',t: 'From now on, we split the chores. You deserve to rest AND to sing.'});
-  lines.push({who:'kiko',t:'And Rie — I know you think every surprise went perfectly. 😂 They were all disasters. And I loved every single one, because they were from you. Let me help you more, okay?'});
+  lines.push({who:'midwardo',t:'And Rie — I know you think every surprise went perfectly. 😂 They were all disasters. And I loved every single one, because they were from you. Let me help you more, okay?'});
   lines.push({who:'rie',t:'…They were DISASTERS?! Oh no. Okay. I\'ll let you help. Starting now. 💙'});
   if((S.flags.nightmares||0)>0) lines.push((S.flags.opened||0)>=2
     ? {who:'rie',t:'And the nightmares… they come less now. Maybe because I finally started telling Mama about them.'}

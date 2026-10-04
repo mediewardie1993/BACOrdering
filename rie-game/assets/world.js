@@ -131,7 +131,7 @@ npc('joy',person({top:0x7fc8c0,hair:0x2a1a14,longHair:true,legs:0x2f4f4f}),-6,3,
 npc('lyn',person({top:0xd97a2b,hair:0x3a2216,bun:true,legs:0x333366,glasses:true}),-15,1,null,'lyn');
 npc('migo',person({top:0xffffff,legs:0x2a4a8a,hair:0x1a1010,scale:.62}),5,9.5,'school1');
 npc('pao',person({top:0x7ec850,legs:0x3a5a2a,hair:0x1a1010,scale:.48}),6.5,9.5,'school2');
-npc('kiko',person({top:0x2f5d8a,legs:0x333333,hair:0x1a1010,scale:1.08}),1.5,6,'bf',null,-Math.PI/2);
+npc('midwardo',person({top:0x2f5d8a,legs:0x333333,hair:0x1a1010,scale:1.08}),1.5,6,'bf',null,-Math.PI/2);
 npc('bea',person({top:0x6d7fa8,hair:0x2a1a14,longHair:true,legs:0x444444}),23,8.4,'friend');
 npc('vendor',person({top:0xa0522d,hair:0xcccccc,bun:true,legs:0x5a3a2a}),15,-2.4,'market',null,Math.PI);
 npc('manager',person({top:0x333333,hair:0x1a1010,legs:0x222222,glasses:true}),22,-3,'gig');
@@ -193,7 +193,7 @@ const keys={};addEventListener('keydown',e=>{keys[e.key.toLowerCase()]=1;if(e.ke
 let near=null;
 const TALK={
   mom:()=>{const left=CHORES.filter(c=>!S.done[c.id]);return left.length?[{who:'mom',t:`Anak, ${left.length} chore${left.length>1?'s':''} left: ${left.map(l=>l.ic).join(' ')}. Kaya mo \'yan!`}]:[{who:'mom',t:'All the chores are done! Ang sipag ng anak ko. Rest a little before your gig, ha?'}];},
-  joy:()=>[{who:'joy',t:['Thank you for bringing the boys, bunso. Miggy says you sing the best lullabies.','Miguel\'s teacher said he used three new picture cards this week! 🥹','If Kiko offers to help, LET him, Rie. Hay naku.','Rent is almost covered — I can feel it. Galing mo!','Front row tonight. I\'m bringing a banner!'][S.day-1]}],
+  joy:()=>[{who:'joy',t:['Thank you for bringing the boys, bunso. Miggy says you sing the best lullabies.','Miguel\'s teacher said he used three new picture cards this week! 🥹','If Midwardo offers to help, LET him, Rie. Hay naku.','Rent is almost covered — I can feel it. Galing mo!','Front row tonight. I\'m bringing a banner!'][S.day-1]}],
   lyn:()=>[{who:'lyn',t:['Sorry for leaving you all the chores, bunso. Overtime pays for Miguel\'s therapy.','Don\'t mix my white uniform with the colored clothes ha! 😅','Block those fake friends already. Your peace > their opinions.','You deserve a day off after this week. I\'ll cover next week, promise.','I already cried twice today and the concert hasn\'t even started.'][S.day-1]}],
 };
 function interact(n){
@@ -201,7 +201,7 @@ function interact(n){
   if(n.mission==='sleep') return endDay();
   if(n.talk) return dialogue(TALK[n.talk](),hub);
   if(n.mission && S.done[n.mission]){
-    const after={school1:[{who:'migo',t:'I\'m already at school, Tita! (…this is my ghost waving 👋)'}],school2:[{who:'pao',t:'(Miguel waves bye-bye with both hands.)'}],bf:[{who:'kiko',t:'I loved it, babe. Really. 😅 Go rest, I\'ll handle the gate.'}],friend:[{who:'bea',t:'I\'m okay for today. Go, you have a gig! 💛'}],cats:[{who:'tofi',t:'(Tofi is asleep in a loaf shape. Do not disturb.)'}]}[n.mission];
+    const after={school1:[{who:'migo',t:'I\'m already at school, Tita! (…this is my ghost waving 👋)'}],school2:[{who:'pao',t:'(Miguel waves bye-bye with both hands.)'}],bf:[{who:'midwardo',t:'I loved it, babe. Really. 😅 Go rest, I\'ll handle the gate.'}],friend:[{who:'bea',t:'I\'m okay for today. Go, you have a gig! 💛'}],cats:[{who:'tofi',t:'(Tofi is asleep in a loaf shape. Do not disturb.)'}]}[n.mission];
     if(after) return dialogue(after,hub);
     return toast('Already done today ✔');
   }
