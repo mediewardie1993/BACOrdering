@@ -13,8 +13,7 @@ Keys: `Space`/`→` next, `←` previous, `B` blank, `F` flash, `1`–`8` color 
 
 ## Build the .exe
 
-On Windows: `npm install && npm run dist` → `dist/Medward-Lyrics-Flasher.exe` (portable, no install).
+On Windows: install Node.js, then double-click `build-exe.bat` (or run `npm install && npm run dist`) → `dist/Medward-Lyrics-Flasher.exe` (portable, no install).
 
-Or push to GitHub: the **Build Medward Lyrics Flasher** workflow builds it and attaches the exe as an artifact.
 
 Dev run: `npm install && npm start`.
