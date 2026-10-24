@@ -1,5 +1,5 @@
 const $ = (id) => document.getElementById(id);
-const api = window.api || {
+const bridge = window.api || {
   // browser fallback so the UI can be opened outside Electron for testing
   pickVideo: async () => null, pickFont: async () => null, saveSong: async () => false,
   loadSong: async () => null, openOutput() {}, toggleFullscreen() {}, sendState() {},
@@ -73,7 +73,7 @@ function buildState() {
 function push() {
   const s = buildState();
   stage.apply(s);
-  api.sendState(s);
+  bridge.sendState(s);
 }
 
 /* ---------- navigation ---------- */
@@ -204,7 +204,7 @@ function renderFonts() {
   if (keep && names.includes(keep)) sel.value = keep;
 }
 async function loadFontFile() {
-  const f = await api.pickFont();
+  const f = await bridge.pickFont();
   if (!f) return;
   if (!doc.customFonts.some((x) => x.url === f.url)) doc.customFonts.push(f);
   renderFonts();
@@ -296,17 +296,17 @@ $('btnNext').onclick = next;
 $('btnPrev').onclick = prev;
 $('btnBlank').onclick = toggleBlank;
 $('btnFlash').onclick = flash;
-$('btnOutput').onclick = () => { api.openOutput(); setTimeout(push, 400); };
-$('btnFull').onclick = () => api.toggleFullscreen();
+$('btnOutput').onclick = () => { bridge.openOutput(); setTimeout(push, 400); };
+$('btnFull').onclick = () => bridge.toggleFullscreen();
 $('btnNew').onclick = () => { if (confirm('Start a new empty song?')) { restore({ sections: [] }); save(); } };
-$('btnSave').onclick = () => api.saveSong(JSON.stringify(snapshot(), null, 2));
+$('btnSave').onclick = () => bridge.saveSong(JSON.stringify(snapshot(), null, 2));
 $('btnOpen').onclick = async () => {
-  const t = await api.loadSong();
+  const t = await bridge.loadSong();
   if (!t) return;
   try { restore(JSON.parse(t)); save(); } catch (e) { alert('That file is not a valid song.'); }
 };
 $('btnPickVideo').onclick = async () => {
-  const v = await api.pickVideo();
+  const v = await bridge.pickVideo();
   if (!v) return;
   doc.videoUrl = v.url; doc.videoName = v.name;
   $('videoName').textContent = v.name;
@@ -328,7 +328,7 @@ FIELDS.forEach((k) => {
   $(k).addEventListener('change', () => { push(); save(); });
 });
 $('transition').addEventListener('change', () => { live.seq++; push(); }); // replay so the new transition shows
-api.onOutputClosed(() => {});
+bridge.onOutputClosed(() => {});
 
 window.addEventListener('keydown', (e) => {
   const t = e.target.tagName;
