@@ -1,0 +1,19 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>Medward Lyrics Flasher - Output</title>
+<link rel="stylesheet" href="stage.css">
+<style>html,body{margin:0;height:100%;background:#000;overflow:hidden}#stage{width:100vw;height:100vh}</style>
+</head>
+<body>
+<div id="stage"></div>
+<script src="stage.js"></script>
+<script>
+  const stage = new Stage(document.getElementById('stage'));
+  window.api.onState((s) => stage.apply(s));
+  window.api.outputReady();
+  window.addEventListener('dblclick', () => window.api.toggleFullscreen());
+</script>
+</body>
+</html>

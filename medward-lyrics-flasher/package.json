@@ -1,0 +1,24 @@
+{
+  "name": "medward-lyrics-flasher",
+  "productName": "Medward Lyrics Flasher",
+  "version": "1.0.0",
+  "description": "Medward Lyrics Flasher - lyrics projection with video backgrounds, color triggers, sections, transitions and fonts",
+  "main": "src/main.js",
+  "scripts": {
+    "start": "electron .",
+    "dist": "electron-builder --win portable --x64"
+  },
+  "devDependencies": {
+    "electron": "^33.2.0",
+    "electron-builder": "^25.1.8"
+  },
+  "build": {
+    "appId": "com.medward.lyricsflasher",
+    "productName": "Medward Lyrics Flasher",
+    "files": ["src/**/*", "package.json"],
+    "win": {
+      "target": "portable",
+      "artifactName": "Medward-Lyrics-Flasher.exe"
+    }
+  }
+}

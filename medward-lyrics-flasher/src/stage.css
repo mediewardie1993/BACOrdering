@@ -1,0 +1,38 @@
+.stage{position:relative;width:100%;height:100%;overflow:hidden;background:#000;container-type:size}
+.stage .bg-video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.stage .tint{position:absolute;inset:0;transition-property:background-color,opacity;transition-timing-function:ease}
+.stage .flash{position:absolute;inset:0;opacity:0;pointer-events:none}
+.stage .flash.go{animation:flashgo var(--flash-ms,600ms) ease-out}
+@keyframes flashgo{0%{opacity:1}100%{opacity:0}}
+.stage .text-layer{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;padding:4cqh 5cqw;box-sizing:border-box;perspective:120cqh}
+.stage .line{position:absolute;max-width:92%;white-space:pre-wrap;word-break:break-word;will-change:transform,opacity,filter}
+.stage .label{position:absolute;left:3cqw;top:3cqh;font:600 2.6cqh system-ui,sans-serif;padding:.5cqh 1.4cqh;border-radius:2cqh;background:rgba(0,0,0,.45);color:#fff;letter-spacing:.1em;text-transform:uppercase}
+.stage .leave{animation:leave var(--dur,500ms) ease forwards}
+@keyframes leave{to{opacity:0}}
+
+.stage .enter-fade{animation:t-fade var(--dur) ease both}
+.stage .enter-slide-left{animation:t-sl var(--dur) cubic-bezier(.2,.8,.2,1) both}
+.stage .enter-slide-right{animation:t-sr var(--dur) cubic-bezier(.2,.8,.2,1) both}
+.stage .enter-slide-up{animation:t-su var(--dur) cubic-bezier(.2,.8,.2,1) both}
+.stage .enter-slide-down{animation:t-sd var(--dur) cubic-bezier(.2,.8,.2,1) both}
+.stage .enter-zoom-in{animation:t-zi var(--dur) cubic-bezier(.2,.8,.2,1) both}
+.stage .enter-zoom-out{animation:t-zo var(--dur) cubic-bezier(.2,.8,.2,1) both}
+.stage .enter-blur{animation:t-blur var(--dur) ease both}
+.stage .enter-flip{animation:t-flip var(--dur) ease both}
+.stage .enter-rotate{animation:t-rot var(--dur) cubic-bezier(.2,.8,.2,1) both}
+.stage .enter-bounce{animation:t-bounce var(--dur) cubic-bezier(.3,1.6,.5,1) both}
+.stage .enter-drop{animation:t-drop var(--dur) cubic-bezier(.5,0,.8,1.4) both}
+.stage .word{display:inline-block;opacity:0;animation:t-fade .35s ease forwards}
+
+@keyframes t-fade{from{opacity:0}to{opacity:1}}
+@keyframes t-sl{from{opacity:0;transform:translateX(30cqw)}to{opacity:1;transform:none}}
+@keyframes t-sr{from{opacity:0;transform:translateX(-30cqw)}to{opacity:1;transform:none}}
+@keyframes t-su{from{opacity:0;transform:translateY(25cqh)}to{opacity:1;transform:none}}
+@keyframes t-sd{from{opacity:0;transform:translateY(-25cqh)}to{opacity:1;transform:none}}
+@keyframes t-zi{from{opacity:0;transform:scale(.4)}to{opacity:1;transform:none}}
+@keyframes t-zo{from{opacity:0;transform:scale(1.8)}to{opacity:1;transform:none}}
+@keyframes t-blur{from{opacity:0;filter:blur(3cqh)}to{opacity:1;filter:blur(0)}}
+@keyframes t-flip{from{opacity:0;transform:rotateX(90deg)}to{opacity:1;transform:none}}
+@keyframes t-rot{from{opacity:0;transform:rotate(-12deg) scale(.6)}to{opacity:1;transform:none}}
+@keyframes t-bounce{from{opacity:0;transform:scale(.2) translateY(15cqh)}to{opacity:1;transform:none}}
+@keyframes t-drop{from{opacity:0;transform:translateY(-60cqh)}to{opacity:1;transform:none}}

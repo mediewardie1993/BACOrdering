@@ -1,0 +1,129 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>Medward Lyrics Flasher</title>
+<meta http-equiv="Content-Security-Policy" content="default-src 'self' file: blob: mediastream:; style-src 'self' 'unsafe-inline'; media-src 'self' file: blob: mediastream:; font-src 'self' file: data:; img-src 'self' data: file: blob:">
+<link rel="stylesheet" href="stage.css">
+<link rel="stylesheet" href="app.css">
+</head>
+<body>
+<header>
+  <h1>Medward Lyrics Flasher</h1>
+  <div class="spacer"></div>
+  <button id="btnNew">New</button>
+  <button id="btnOpen">Open song…</button>
+  <button id="btnSave">Save song…</button>
+  <button id="btnOutput" class="accent">Open Output Screen</button>
+  <button id="btnFull">Fullscreen output</button>
+</header>
+
+<main>
+  <!-- LEFT: sections -->
+  <section class="col" id="colSections">
+    <h2>Sections</h2>
+    <div class="addrow">
+      <button data-add="Verse">+ Verse</button>
+      <button data-add="Refrain">+ Refrain</button>
+      <button data-add="Chorus">+ Chorus</button>
+      <button data-add="Bridge">+ Bridge</button>
+    </div>
+    <div class="addrow">
+      <input id="customName" placeholder="Custom section name (Intro, Outro…)">
+      <button id="btnAddCustom">Add section</button>
+    </div>
+    <p class="hint">Separate slides inside a section with a blank line.</p>
+    <div id="sections"></div>
+  </section>
+
+  <!-- CENTER: preview + slides -->
+  <section class="col" id="colCenter">
+    <div class="preview"><div id="preview"></div></div>
+    <div class="transport">
+      <button id="btnPrev">◀ Prev</button>
+      <button id="btnBlank">Blank (B)</button>
+      <button id="btnNext" class="accent">Next ▶</button>
+      <button id="btnFlash" class="flashbtn">⚡ Flash (F)</button>
+    </div>
+    <h2>Slides <span id="slideCount" class="muted"></span></h2>
+    <div id="slides"></div>
+  </section>
+
+  <!-- RIGHT: settings -->
+  <section class="col" id="colSettings">
+    <h2>Background</h2>
+    <div class="seg" id="bgMode">
+      <button data-mode="color" class="on">Color</button>
+      <button data-mode="video">Video file</button>
+      <button data-mode="device">Video source</button>
+    </div>
+    <div id="bgVideoBox" hidden>
+      <button id="btnPickVideo">Choose video…</button>
+      <span id="videoName" class="muted">none</span>
+      <label class="row"><input type="checkbox" id="loop" checked> Loop video</label>
+    </div>
+    <div id="bgDeviceBox" hidden>
+      <select id="deviceSel"></select>
+      <button id="btnRefreshDevices">Refresh</button>
+      <p class="hint">Camera, capture card or virtual camera (e.g. OBS Virtual Camera).</p>
+    </div>
+    <label class="row">Background color <input type="color" id="bgColor" value="#101020"></label>
+    <label class="row">Color tint over video <input type="range" id="tint" min="0" max="100" value="30"><output id="tintO">30%</output></label>
+
+    <h2>Color triggers</h2>
+    <div id="palette"></div>
+    <p class="hint">Click a swatch or press keys <b>1–8</b> to change the background color. Click the small picker under a swatch to edit it.</p>
+    <label class="row">Fade time <input type="range" id="colorMs" min="0" max="3000" step="50" value="400"><output id="colorMsO">400 ms</output></label>
+    <label class="row"><input type="checkbox" id="useSectionColor"> Use each section's own color when its slides appear</label>
+    <label class="row"><input type="checkbox" id="cycleColor"> Cycle palette on every slide</label>
+    <label class="row">Flash color <input type="color" id="flashColor" value="#ffffff"></label>
+    <label class="row">Flash length <input type="range" id="flashMs" min="100" max="2000" step="50" value="600"><output id="flashMsO">600 ms</output></label>
+
+    <h2>Transition</h2>
+    <select id="transition">
+      <option value="fade">Fade</option>
+      <option value="slide-left">Slide in from right</option>
+      <option value="slide-right">Slide in from left</option>
+      <option value="slide-up">Slide up</option>
+      <option value="slide-down">Slide down</option>
+      <option value="zoom-in">Zoom in</option>
+      <option value="zoom-out">Zoom out</option>
+      <option value="blur">Blur in</option>
+      <option value="flip">Flip</option>
+      <option value="rotate">Rotate</option>
+      <option value="bounce">Bounce</option>
+      <option value="drop">Drop</option>
+      <option value="typewriter">Word by word</option>
+      <option value="none">None (cut)</option>
+    </select>
+    <label class="row">Duration <input type="range" id="duration" min="100" max="2500" step="50" value="600"><output id="durationO">600 ms</output></label>
+
+    <h2>Font</h2>
+    <div class="row"><select id="fontFamily"></select></div>
+    <div class="row">
+      <button id="btnLoadFont">Load font file…</button>
+      <button id="btnSysFonts">Installed fonts</button>
+    </div>
+    <label class="row">Size <input type="range" id="fontSize" min="3" max="20" step="0.5" value="9"><output id="fontSizeO">9</output></label>
+    <label class="row">Line height <input type="range" id="lineHeight" min="0.9" max="2" step="0.05" value="1.2"><output id="lineHeightO">1.2</output></label>
+    <label class="row">Text color <input type="color" id="color" value="#ffffff"></label>
+    <label class="row">Outline <input type="range" id="outline" min="0" max="10" step="0.5" value="0"><input type="color" id="outlineColor" value="#000000"></label>
+    <div class="row checks">
+      <label><input type="checkbox" id="bold" checked> Bold</label>
+      <label><input type="checkbox" id="italic"> Italic</label>
+      <label><input type="checkbox" id="upper"> CAPS</label>
+      <label><input type="checkbox" id="shadow" checked> Shadow</label>
+      <label><input type="checkbox" id="showLabel" checked> Section tag</label>
+    </div>
+    <div class="seg" id="align">
+      <button data-align="left">Left</button>
+      <button data-align="center" class="on">Center</button>
+      <button data-align="right">Right</button>
+    </div>
+  </section>
+</main>
+
+<script src="stage.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
